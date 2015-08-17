@@ -57,6 +57,7 @@ class IntegrationController extends Controller
         }
 
         Session::put('visdata', (object)[
+            'visualization' => $visualization->id,
             'category' => $category,
             'data' => $data
         ]);
