@@ -151,7 +151,7 @@ class RatingController extends Controller
                 $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $map);
 
                 // select only the best mapping for each visualization
-                if ($mapRating > $bestrating){
+                if ($mapRating >= $bestrating){
                     $mappingsRating = (object) ['rating' => $mapRating, 'mapping' => $map];
                     $bestrating = $mapRating;
                 }

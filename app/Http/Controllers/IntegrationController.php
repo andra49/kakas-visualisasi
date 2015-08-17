@@ -47,7 +47,7 @@ class IntegrationController extends Controller
         // get visualization visual variable information
         $visualization = \App\Visualization::findOrFail($mapping->visualizationid);
 
-        $category; // save which data/column is used as category
+        $category = null; // save which data/column is used as category
 
         //return response()->json($visualization->visualVariables);
         for ($i=0; $i < count($visualization->visualVariables); $i++) { 

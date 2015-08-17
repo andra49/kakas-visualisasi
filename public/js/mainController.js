@@ -27,7 +27,12 @@ angular.module('visualisasi')
 		    	baseConfiguration.data.type = 'pie';
 		        break;
 		    case 5: // stacked bar
-		    
+		    	baseConfiguration.data.type = 'bar';
+		    	var groups = [];
+		    	for (var i = 1; i < conf.data[0].length; i++) {
+		    		groups.push(conf.data[0][i]);
+		    	};
+		    	baseConfiguration.data.groups = [groups];
 		        break;
 		    case 6: // line	
 		    	// default is line, do nothing
@@ -36,11 +41,24 @@ angular.module('visualisasi')
 		    	baseConfiguration.data.type = 'area';		    
 		        break;
 		    case 8: // stacked area
-		    
+		    	baseConfiguration.data.type = 'area';
+		    	var groups = [];
+		    	for (var i = 1; i < conf.data[0].length; i++) {
+		    		groups.push(conf.data[0][i]);
+		    	};
+		    	baseConfiguration.data.groups = [groups];		
 		        break;
 		    case 9: // scatter
 		    	baseConfiguration.data.type = 'scatter';
-		    	baseConfiguration.axis = {};
+		    	baseConfiguration.data.x = conf.data[0][0]; // get first column
+		    	baseConfiguration.axis = {
+		    		x: {
+		    			label: conf.data[0][0]
+		    		},
+		    		y: {
+		    			label: conf.data[0][1]
+		    		}
+		    	};
 		        break;
 		    case 10: // bubble
 		    
