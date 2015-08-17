@@ -16,6 +16,8 @@ use Session;
 
 class RatingController extends Controller
 {
+    private $combinations;
+    private $mappings;
      /**
      * Responds to requests to GET /rating
      */
@@ -32,35 +34,83 @@ class RatingController extends Controller
         ]);
     }
 
+
+    private function combination($arr, $len, $startPosition, $result) 
+    {
+        if ($len == 0) {
+            $newresult = [];
+            // deep copy
+            foreach ($result as $value) {
+                $newresult[] = $value;
+            }
+            $this->combinations[] = $newresult;
+        }
+        for ($i = $startPosition; $i <= count($arr) - 1; $i++) { 
+            $result[count($result) - $len] = $arr[$i];
+            $this->combination($arr, $len - 1, $i + 1, $result);
+        }
+    }
+
+    private function permutation($n, $arr)
+    {
+        if ($n == 1) {
+            $newarr = [];
+            // deep copy
+            foreach ($arr as $value) {
+                $newarr[] = $value;
+            }
+            $this->mappings[] = $newarr;
+        } else {
+            for ($i = 0; $i < $n - 1; $i++) { 
+                $this->permutation($n - 1, $arr);
+                if ($n % 2 == 0){ // even
+                    $temp = $arr[$i];
+                    $arr[$i] = $arr[$n - 1];
+                    $arr[$n - 1] = $temp;
+                } else {
+                    $temp = $arr[0];
+                    $arr[0] = $arr[$n - 1];
+                    $arr[$n - 1] = $temp;
+                }
+            }
+            $this->permutation($n - 1, $arr);
+        }
+    }
     /*
-    *   TODO : Change to a more generic approach
+    *   TODO : DONE!
     */
     public function mapper($numData, $numVisual)
     {
-        // limited to 3 visual variables
-        $mappings = [];
-
-        for ($i=0; $i < $numData; $i++) {
-            if ($numVisual == 1) {
-                $mappings[] = [$i];
-            } else {
-                for ($j=0; $j < $numData; $j++) { 
-                    if ($i != $j) {
-                        if ($numVisual == 2) {
-                            $mappings[] = [$i, $j];
-                        } else {
-                            for ($k=0; $k < $numData; $k++) { 
-                                if ($i != $k && $j != $k) {
-                                    if ($numVisual == 3) {
-                                        $mappings[] = [$i, $j, $k];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        // initialize data
+        $availableData = [];
+        for ($i=0; $i < $numData; $i++) { 
+            $availableData[] = $i;
         }
+
+        $availableVisual = [];
+        for ($i=0; $i < $numVisual; $i++) { 
+            $availableVisual[] = null;
+        }
+
+        $this->combination($availableData, $numVisual, 0, $availableVisual);
+        foreach ($this->combinations as $combination) {
+            $this->permutation($numVisual, $combination);
+        }
+
+        // deep copy
+        $mappings = [];
+        foreach ($this->mappings as $mapping) {
+            $temp = [];
+            foreach ($mapping as $pair) {
+                $temp[] = $pair;
+            }
+            $mappings[] = $temp;
+        }
+
+        // reset current mappings
+        $this->combinations = [];
+        $this->mappings = [];
+
         return $mappings;
     }
 
