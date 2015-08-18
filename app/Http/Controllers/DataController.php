@@ -9,10 +9,24 @@ use Request;
 use Session;
 use Schema;
 use DB;
+use View;
 
 class DataController extends Controller 
 {
-  public function upload() 
+  public function getIndex()
+  {
+    return view('dataset.selectdataset', [
+        'data' => \App\Dataset::all()->toArray(),
+        'columnnames' => Schema::getColumnListing('datasets')
+    ]);  
+  }
+
+  public function getUpload()
+  {
+    return View::make('dataset.upload'); 
+  }
+
+  public function postUpload() 
   {
     $file = Input::file('dataset');
     // checking file is valid.
@@ -25,25 +39,39 @@ class DataController extends Controller
       $path = $destinationPath.'/'.$fileName;
       $csv = array_map("str_getcsv", file($path, FILE_SKIP_EMPTY_LINES));
       $tablename = basename($destinationPath.'/'.$fileName, '.csv');
-      
-      // check if there is a table with the same name in the database
-      if(!Schema::connection('dataset')->hasTable($tablename)){
-        // Save to database  
-        $this->saveToDB($path, $tablename, $csv[0], $csv);
-        // sending back with message
-        Session::flash('success', 'Uploaded successfully'); 
-      } else {
-        // sending back with message
-        Session::flash('error', 'Dataset with the same name already exist in database');
-      }
 
-      return Redirect::to('upload');
+      Session::put('csv', $csv);
+
+      // show uploaded data
+      return view('dataset.uploadsetting', [
+            'tablename' => $tablename,
+            'attributes' => $csv[0]
+      ]);
     }
     else {
       // sending back with error message.
       Session::flash('error', 'uploaded file is not valid');
       return Redirect::to('upload');
     }
+  }
+
+  public function postConfiguration() 
+  { 
+    $tablename = Input::get('tablename');
+    $csv = Session::get('csv');
+
+    // check if there is a table with the same name in the database
+    if(!Schema::connection('dataset')->hasTable($tablename)){
+      // Save to database  
+      $this->saveToDB($path, $tablename, $csv[0], $csv);
+      // sending back with message
+      Session::flash('success', 'Uploaded successfully'); 
+    } else {
+      // sending back with message
+      Session::flash('error', 'Dataset with the same name already exist in database');
+    }
+
+    return Redirect::to('dataset');
   }
 
   public function checkData()
@@ -60,7 +88,7 @@ class DataController extends Controller
       $csv = array_map("str_getcsv", file($path, FILE_SKIP_EMPTY_LINES));
       $tablename = basename($destinationPath.'/'.$fileName, '.csv');
       
-      return response()->json($csv);
+      var_dump(DB::connection('dataset')->table($tablename)->select('BUS/Truck')->distinct()->get()); exit();
     }
   }
 
@@ -100,7 +128,7 @@ class DataController extends Controller
       // check if data is numeric
       $isnumeric = is_numeric($data[0][$header[$i]]);
       $quantity = DB::connection('dataset')->table($tablename)->select($header[$i])->count();
-      $cardinality = DB::connection('dataset')->table($tablename)->select($header[$i])->distinct()->count();
+      $cardinality = count(DB::connection('dataset')->table($tablename)->select($header[$i])->distinct()->get());
       
       $attribute = new \App\Attribute;
       $attribute->name = $header[$i];

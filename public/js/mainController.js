@@ -76,7 +76,7 @@ angular.module('visualisasi')
 		}
 		$scope.chart = c3.generate(baseConfiguration);
 	}
-	$http.get('integration/data')
+	$http.get('visualization/data')
 	.then(function(response) {
   		console.log(response.data);
     	$scope.loadChart(response.data);

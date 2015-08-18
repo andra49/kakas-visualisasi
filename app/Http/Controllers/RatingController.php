@@ -13,6 +13,8 @@ use App\Dataset as Dataset;
 use App\Attribute as Attribute;
 use Input;
 use Session;
+use Schema;
+use Auth;
 
 class RatingController extends Controller
 {
@@ -23,15 +25,57 @@ class RatingController extends Controller
      */
     public function getIndex()
     {
-        $dataset = Dataset::all(['id', 'table_name']);
-        $names = [];
-        foreach ($dataset as $table_name) {
-            $names[] = $table_name->table_name;
-        }
+        // $dataset = Dataset::all(['id', 'table_name']);
+        // $names = [];
+        // foreach ($dataset as $table_name) {
+        //     $names[] = $table_name->table_name;
+        // }
 
-        return view('rating.selectdataset', [
-            'datasets' => $dataset
+        // return view('rating.selectdataset', [
+        //     'datasets' => $dataset
+        // ]);
+
+        // get current user data
+        $user = Auth::user();
+
+        // get available visualization
+        $visualization = $user->projects->toArray();
+
+        return view('rating.home', [
+            'data' => $visualization,
+            'columnnames' => Schema::getColumnListing('visualization_projects')
         ]);
+    }
+
+    public function getNew()
+    {
+        return view('rating.newvisualization', [
+            'datasets' => Dataset::all()
+        ]);
+    }
+
+    public function postNew()
+    {
+        if (Input::get('name') != null){
+            $vis = new \App\VisualizationProject;
+            $vis->name = Input::get('name');
+            
+            $user = Auth::user();
+            $vis->user_id = $user->id;
+            
+            $dataset = Dataset::findOrFail(Input::get('datasetid'));
+            $dataset->projects()->save($vis);
+            Session::put('projectid', $vis->id);
+            return redirect('setup/rating');
+        } else {
+            return response()->json(['status' => 'failed']);            
+        }
+    }
+
+    public function getVisualization($id)
+    {
+        Session::put('visualizationid', $id);
+        return redirect('setup/rating');
     }
 
 
@@ -134,71 +178,76 @@ class RatingController extends Controller
     */
     public function getRating()
     {
-        // load selected dataset
-        $dataset = Dataset::findOrFail(Input::get('dataset'));
+        if (Session::get('visualizationid') == null) {
+            return redirect('setup');
+        } else {
+            // load project
+            $project = \App\VisualizationProject::findOrFail(Session::get('visualizationid'));
 
-        // TODO : load selected attributes
+            // load selected dataset
+            $dataset = $project->dataset;
 
+            // TODO : load selected attributes
+            $rating = [];
 
-        $rating = [];
+            foreach (Visualization::all() as $visualization) {
+                // PRE SELECTION
+                if (count($dataset->attributes) < count($visualization->visualVariables)) {
+                    // if the selected attributes is less than the number of visual variables needed
+                    // if ($visualization->id == 14)
+                    //     var_dump(count($visualization->visualVariables));exit();
+                } else {
 
-        foreach (Visualization::all() as $visualization) {
-            // PRE SELECTION
-            if (count($dataset->attributes) < count($visualization->visualVariables)) {
-                // if the selected attributes is less than the number of visual variables needed
-                // if ($visualization->id == 14)
-                //     var_dump(count($visualization->visualVariables));exit();
-            } else {
+                    // GENERATE MAPPINGS
+                    $mappings = $this->matcher($dataset, $visualization); // [0, 1], [0,2], ...
+                    $mappingsRating;
+                    $bestrating = 0;
 
-                // GENERATE MAPPINGS
-                $mappings = $this->matcher($dataset, $visualization); // [0, 1], [0,2], ...
-                $mappingsRating;
-                $bestrating = 0;
+                    // GENERATE RATING FOR EACH MAPPING
+                    foreach ($mappings as $map) {
+                        // FACTUAL VISUALIZATION KNOWLEDGE
+                        $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $map);
 
-                // GENERATE RATING FOR EACH MAPPING
-                foreach ($mappings as $map) {
-                    // FACTUAL VISUALIZATION KNOWLEDGE
-                    $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $map);
-
-                    // select only the best mapping for each visualization
-                    if ($mapRating > $bestrating){
-                        $mappingsRating = (object) ['rating' => $mapRating, 'mapping' => $map];
-                        $bestrating = $mapRating;
-                    }
-                }
-                $visrating = (object) ['visualizationid' => $visualization->id,
-                    'visualization' => $visualization->name, 
-                    'rating' => $mappingsRating->rating, 
-                    'mapping' => $mappingsRating->mapping,
-                    'datasetid' => $dataset->id
-                ];
-
-                // check if there is other version of visualization is used (barchart and 2-data barchart)
-                $exist = false;
-                for ($i = 0; $i < count($rating); $i++) {
-                    if ($visrating->visualization == $rating[$i]->visualization) {
-                        if (count($visrating->mapping) >= count($rating[$i]->mapping)) {
-                            $rating[$i] = $visrating;
+                        // select only the best mapping for each visualization
+                        if ($mapRating > $bestrating){
+                            $mappingsRating = (object) ['rating' => $mapRating, 'mapping' => $map];
+                            $bestrating = $mapRating;
                         }
-                        $exist = true;
-                        break;
                     }
-                }
-                if (!$exist){
-                    $rating[] = $visrating;                
+                    $visrating = (object) ['visualizationid' => $visualization->id,
+                        'visualization' => $visualization->name, 
+                        'rating' => $mappingsRating->rating, 
+                        'mapping' => $mappingsRating->mapping,
+                        'datasetid' => $dataset->id
+                    ];
+
+                    // check if there is other version of visualization is used (barchart and 2-data barchart)
+                    $exist = false;
+                    for ($i = 0; $i < count($rating); $i++) {
+                        if ($visrating->visualization == $rating[$i]->visualization) {
+                            if (count($visrating->mapping) >= count($rating[$i]->mapping)) {
+                                $rating[$i] = $visrating;
+                            }
+                            $exist = true;
+                            break;
+                        }
+                    }
+                    if (!$exist){
+                        $rating[] = $visrating;                
+                    }
                 }
             }
+
+            // sort mapping
+            usort($rating, array("App\Http\Controllers\RatingController", "cmp"));
+
+            // Save mappings to session
+            Session::put('mappings', $rating);
+
+            return view('rating.selectvisualization', [
+                'configuration' => $rating
+            ]);
         }
-
-        // sort mapping
-        usort($rating, array("App\Http\Controllers\RatingController", "cmp"));
-
-        // Save mappings to session
-        Session::put('mappings', $rating);
-
-        return view('rating.selectvisualization', [
-            'configuration' => $rating
-        ]);
 
         //return response()->json($rating);
     }
