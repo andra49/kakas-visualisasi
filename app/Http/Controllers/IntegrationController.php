@@ -49,15 +49,16 @@ class IntegrationController extends Controller
 
         $category = null; // save which data/column is used as category
 
-        //return response()->json($visualization->visualVariables);
         for ($i=0; $i < count($visualization->visualVariables); $i++) { 
             if($visualization->visualVariables[$i]->pivot->type == "category"){
                 $category = $header[$i];
             }
+            $test[] = [$i, $visualization->visualVariables[$i]->pivot->type];
         }
+        //return response()->json($test);
 
         Session::put('visdata', (object)[
-            'visualization' => $visualization->id,
+            'visualization' => $visualization->name,
             'category' => $category,
             'data' => $data
         ]);

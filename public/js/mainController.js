@@ -14,41 +14,51 @@ angular.module('visualisasi')
 		};
 		// get selected visualization
 		switch(conf.visualization) {
-		    case 1: // bar chart
+		    case 'Bar Chart': // bar chart
 		    	baseConfiguration.data.type = 'bar';
 		        break;
-		    case 2: // histogram
+		    case 'Histogram': // histogram
 
 		        break;
-		    case 3: // area size
+		    case 'Area Size Chart': // area size
 		    
 		        break;
-		    case 4: // pie chart
+		    case 'Pie Chart': // pie chart
 		    	baseConfiguration.data.type = 'pie';
+		    	baseConfiguration.data.rows = null;
+		    	baseConfiguration.data.x = null;
+		    	var columndata = [];
+		    	for (var i = 1; i < conf.data.length; i++) {
+		    		columndata.push(conf.data[i]);
+		    	};
+		    	console.log(columndata);
+		    	baseConfiguration.data.columns = columndata;
 		        break;
-		    case 5: // stacked bar
+		    case 'Stacked Bar Chart': // stacked bar
 		    	baseConfiguration.data.type = 'bar';
 		    	var groups = [];
-		    	for (var i = 1; i < conf.data[0].length; i++) {
-		    		groups.push(conf.data[0][i]);
+		    	for (var i = 0; i < conf.data[0].length; i++) {
+		    		if (conf.data[0][i] != conf.category)
+		    			groups.push(conf.data[0][i]);
 		    	};
 		    	baseConfiguration.data.groups = [groups];
 		        break;
-		    case 6: // line	
+		    case 'Line Chart': // line	
 		    	// default is line, do nothing
 		        break;
-		    case 7: // area
+		    case 'Area Chart': // area
 		    	baseConfiguration.data.type = 'area';		    
 		        break;
-		    case 8: // stacked area
+		    case 'Stacked Area Chart': // stacked area
 		    	baseConfiguration.data.type = 'area';
 		    	var groups = [];
-		    	for (var i = 1; i < conf.data[0].length; i++) {
-		    		groups.push(conf.data[0][i]);
+		    	for (var i = 0; i < conf.data[0].length; i++) {
+		    		if (conf.data[0][i] != conf.category)
+		    			groups.push(conf.data[0][i]);
 		    	};
 		    	baseConfiguration.data.groups = [groups];		
 		        break;
-		    case 9: // scatter
+		    case 'Scatter Plot': // scatter
 		    	baseConfiguration.data.type = 'scatter';
 		    	baseConfiguration.data.x = conf.data[0][0]; // get first column
 		    	baseConfiguration.axis = {
@@ -60,7 +70,7 @@ angular.module('visualisasi')
 		    		}
 		    	};
 		        break;
-		    case 10: // bubble
+		    case 'Bubble Plot': // bubble
 		    
 		        break;
 		}

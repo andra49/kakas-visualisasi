@@ -137,31 +137,57 @@ class RatingController extends Controller
         // load selected dataset
         $dataset = Dataset::findOrFail(Input::get('dataset'));
 
+        // TODO : load selected attributes
+
+
         $rating = [];
 
         foreach (Visualization::all() as $visualization) {
-            // GENERATE MAPPINGS
-            $mappings = $this->matcher($dataset, $visualization); // [0, 1], [0,2], ...
-            $mappingsRating;
-            $bestrating = 0;
+            // PRE SELECTION
+            if (count($dataset->attributes) < count($visualization->visualVariables)) {
+                // if the selected attributes is less than the number of visual variables needed
+                // if ($visualization->id == 14)
+                //     var_dump(count($visualization->visualVariables));exit();
+            } else {
 
-            // GENERATE RATING FOR EACH MAPPING
-            foreach ($mappings as $map) {
-                // FACTUAL VISUALIZATION KNOWLEDGE
-                $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $map);
+                // GENERATE MAPPINGS
+                $mappings = $this->matcher($dataset, $visualization); // [0, 1], [0,2], ...
+                $mappingsRating;
+                $bestrating = 0;
 
-                // select only the best mapping for each visualization
-                if ($mapRating >= $bestrating){
-                    $mappingsRating = (object) ['rating' => $mapRating, 'mapping' => $map];
-                    $bestrating = $mapRating;
+                // GENERATE RATING FOR EACH MAPPING
+                foreach ($mappings as $map) {
+                    // FACTUAL VISUALIZATION KNOWLEDGE
+                    $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $map);
+
+                    // select only the best mapping for each visualization
+                    if ($mapRating > $bestrating){
+                        $mappingsRating = (object) ['rating' => $mapRating, 'mapping' => $map];
+                        $bestrating = $mapRating;
+                    }
+                }
+                $visrating = (object) ['visualizationid' => $visualization->id,
+                    'visualization' => $visualization->name, 
+                    'rating' => $mappingsRating->rating, 
+                    'mapping' => $mappingsRating->mapping,
+                    'datasetid' => $dataset->id
+                ];
+
+                // check if there is other version of visualization is used (barchart and 2-data barchart)
+                $exist = false;
+                for ($i = 0; $i < count($rating); $i++) {
+                    if ($visrating->visualization == $rating[$i]->visualization) {
+                        if (count($visrating->mapping) >= count($rating[$i]->mapping)) {
+                            $rating[$i] = $visrating;
+                        }
+                        $exist = true;
+                        break;
+                    }
+                }
+                if (!$exist){
+                    $rating[] = $visrating;                
                 }
             }
-            $visrating = (object) ['visualizationid' => $visualization->id, 
-                'rating' => $mappingsRating->rating, 
-                'mapping' => $mappingsRating->mapping,
-                'datasetid' => $dataset->id
-            ];
-            $rating[] = $visrating;
         }
 
         // sort mapping
@@ -181,7 +207,7 @@ class RatingController extends Controller
         // get visual variables
         $visualType = $visualization->visualVariables;
 
-        // get data types
+        // get attributes
         $dataType = $dataset->attributes;
 
         $numVisualVariables = count($map);

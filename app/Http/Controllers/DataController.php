@@ -26,18 +26,41 @@ class DataController extends Controller
       $csv = array_map("str_getcsv", file($path, FILE_SKIP_EMPTY_LINES));
       $tablename = basename($destinationPath.'/'.$fileName, '.csv');
       
-      // Save to database  
-      $this->saveToDB($path, $tablename, $csv[0], $csv);
+      // check if there is a table with the same name in the database
+      if(!Schema::connection('dataset')->hasTable($tablename)){
+        // Save to database  
+        $this->saveToDB($path, $tablename, $csv[0], $csv);
+        // sending back with message
+        Session::flash('success', 'Uploaded successfully'); 
+      } else {
+        // sending back with message
+        Session::flash('error', 'Dataset with the same name already exist in database');
+      }
 
-      // sending back with message
-      Session::flash('success', 'Uploaded successfully'); 
       return Redirect::to('upload');
-      //return response()->json($this->saveToDB($path, $tablename, $csv[0], $csv));
     }
     else {
       // sending back with error message.
       Session::flash('error', 'uploaded file is not valid');
       return Redirect::to('upload');
+    }
+  }
+
+  public function checkData()
+  {
+    $file = Input::file('dataset');
+    // checking file is valid.
+    if (Input::file('dataset')->isValid()) {
+      $destinationPath = 'uploads'; // upload path
+      $extension = Input::file('dataset')->getClientOriginalExtension(); // getting dataset extension
+      $fileName = $file->getClientOriginalName(); // renaming dataset
+      Input::file('dataset')->move($destinationPath, $fileName); // uploading file to given path
+
+      $path = $destinationPath.'/'.$fileName;
+      $csv = array_map("str_getcsv", file($path, FILE_SKIP_EMPTY_LINES));
+      $tablename = basename($destinationPath.'/'.$fileName, '.csv');
+      
+      return response()->json($csv);
     }
   }
 
@@ -106,12 +129,11 @@ class DataController extends Controller
       $columndata = $columndata."`".$header[$i]."` VARCHAR(20) NULL,\n";
     }
     // special case for last column
-    $columndata = $columndata."`".$header[count($header) - 1]."` VARCHAR(20) NULL\n";
+    $columndata = $columndata."`".$header[count($header) - 1]."` VARCHAR(20) NULL";
 
 
     return "CREATE TABLE IF NOT EXISTS `".$tablename."` (
         ".$columndata."
-      )
-      ENGINE = InnoDB;";
+    )ENGINE = InnoDB;";
   }
 }

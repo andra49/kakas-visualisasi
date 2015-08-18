@@ -17,6 +17,7 @@ Route::get('upload', function() {
   return View::make('frontenddemo.upload');
 });
 Route::post('apply/upload', 'DataController@upload');
+Route::post('apply/check', 'DataController@checkData');
 
 Route::get('/', function () {
     return view('welcome');
