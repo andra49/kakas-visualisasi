@@ -1,0 +1,100 @@
+kode_provinsi,nama_provinsi,tahun,jumlah_kasus,jumlah_meninggal,cfr
+11,"Prov. Nanggroe Aceh Darussalam","2005 - 2009",0,0,0
+11,"Prov. Nanggroe Aceh Darussalam","2011",0,0,0
+11,"Prov. Nanggroe Aceh Darussalam","2012",0,0,0
+12,"Prov. Sumatera Utara","2005 - 2009",8,7,87.5
+12,"Prov. Sumatera Utara","2011",0,0,0
+12,"Prov. Sumatera Utara","2012",0,0,0
+13,"Prov. Sumatera Barat","2005 - 2009",4,1,25
+13,"Prov. Sumatera Barat","2011",0,0,0
+13,"Prov. Sumatera Barat","2012",0,0,0
+14,"Prov. Riau","2005 - 2009",9,7,77.77778
+14,"Prov. Riau","2011",0,0,100
+14,"Prov. Riau","2012",1,1,0
+15,"Prov. Jambi","2005 - 2009",0,0,0
+15,"Prov. Jambi","2011",0,0,0
+15,"Prov. Jambi","2012",0,0,0
+16,"Prov. Sumatera Selatan","2005 - 2009",1,1,100
+16,"Prov. Sumatera Selatan","2011",0,0,0
+16,"Prov. Sumatera Selatan","2012",0,0,0
+17,"Prov. Bengkulu","2005 - 2009",0,0,0
+17,"Prov. Bengkulu","2011",0,0,0
+17,"Prov. Bengkulu","2012",1,1,0
+18,"Prov. Lampung","2005 - 2009",3,0,0
+18,"Prov. Lampung","2011",0,0,0
+18,"Prov. Lampung","2012",0,0,0
+19,"Prov. Kepulauan Bangka Belitung","2005 - 2009",0,0,0
+19,"Prov. Kepulauan Bangka Belitung","2011",0,0,0
+19,"Prov. Kepulauan Bangka Belitung","2012",0,0,0
+21,"Prov. Kepulauan Riau","2005 - 2009",0,0,0
+21,"Prov. Kepulauan Riau","2011",0,0,0
+21,"Prov. Kepulauan Riau","2012",0,0,0
+31,"Prov. DKI Jakarta","2005 - 2009",47,40,85.10638
+31,"Prov. DKI Jakarta","2011",4,3,100
+31,"Prov. DKI Jakarta","2012",1,1,100
+32,"Prov. Jawa Barat","2005 - 2009",42,35,83.33334
+32,"Prov. Jawa Barat","2011",4,3,50
+32,"Prov. Jawa Barat","2012",2,2,100
+33,"Prov. Jawa Tengah","2005 - 2009",13,12,92.30769
+33,"Prov. Jawa Tengah","2011",0,0,100
+33,"Prov. Jawa Tengah","2012",0,0,0
+34,"Prov. D I Yogyakarta","2005 - 2009",1,1,100
+34,"Prov. D I Yogyakarta","2011",1,1,0
+34,"Prov. D I Yogyakarta","2012",1,1,100
+35,"Prov. Jawa Timur","2005 - 2009",9,6,66.66666
+35,"Prov. Jawa Timur","2011",0,0,0
+35,"Prov. Jawa Timur","2012",0,0,0
+36,"Prov. Banten","2005 - 2009",31,28,90.32258
+36,"Prov. Banten","2011",0,0,100
+36,"Prov. Banten","2012",1,1,0
+51,"Prov. Bali","2005 - 2009",2,2,100
+51,"Prov. Bali","2011",3,3,0
+51,"Prov. Bali","2012",1,1,100
+52,"Prov. Nusa Tenggara Barat","2005 - 2009",0,0,0
+52,"Prov. Nusa Tenggara Barat","2011",0,0,0
+52,"Prov. Nusa Tenggara Barat","2012",1,1,0
+53,"Prov. Nusa Tenggara Timur","2005 - 2009",0,0,0
+53,"Prov. Nusa Tenggara Timur","2011",0,0,0
+53,"Prov. Nusa Tenggara Timur","2012",0,0,0
+61,"Prov. Kalimantan Barat","2005 - 2009",0,0,0
+61,"Prov. Kalimantan Barat","2011",0,0,0
+61,"Prov. Kalimantan Barat","2012",0,0,0
+62,"Prov. Kalimantan Tengah","2005 - 2009",0,0,0
+62,"Prov. Kalimantan Tengah","2011",0,0,0
+62,"Prov. Kalimantan Tengah","2012",0,0,0
+63,"Prov. Kalimantan Selatan","2005 - 2009",0,0,0
+63,"Prov. Kalimantan Selatan","2011",0,0,0
+63,"Prov. Kalimantan Selatan","2012",0,0,0
+64,"Prov. Kalimantan Timur","2005 - 2009",0,0,0
+64,"Prov. Kalimantan Timur","2011",0,0,0
+64,"Prov. Kalimantan Timur","2012",0,0,0
+71,"Prov. Sulawesi Utara","2005 - 2009",0,0,0
+71,"Prov. Sulawesi Utara","2011",0,0,0
+71,"Prov. Sulawesi Utara","2012",0,0,0
+72,"Prov. Sulawesi Tengah","2005 - 2009",0,0,0
+72,"Prov. Sulawesi Tengah","2011",0,0,0
+72,"Prov. Sulawesi Tengah","2012",0,0,0
+73,"Prov. Sulawesi Selatan","2005 - 2009",1,1,100
+73,"Prov. Sulawesi Selatan","2011",0,0,0
+73,"Prov. Sulawesi Selatan","2012",0,0,0
+74,"Prov. Sulawesi Tenggara","2005 - 2009",0,0,0
+74,"Prov. Sulawesi Tenggara","2011",0,0,0
+74,"Prov. Sulawesi Tenggara","2012",0,0,0
+75,"Prov. Gorontalo","2005 - 2009",0,0,0
+75,"Prov. Gorontalo","2011",0,0,0
+75,"Prov. Gorontalo","2012",0,0,0
+76,"Prov. Sulawesi Barat","2005 - 2009",0,0,0
+76,"Prov. Sulawesi Barat","2011",0,0,0
+76,"Prov. Sulawesi Barat","2012",0,0,0
+81,"Prov. Maluku","2005 - 2009",0,0,0
+81,"Prov. Maluku","2011",0,0,0
+81,"Prov. Maluku","2012",0,0,0
+82,"Prov. Maluku Utara","2005 - 2009",0,0,0
+82,"Prov. Maluku Utara","2011",0,0,0
+82,"Prov. Maluku Utara","2012",0,0,0
+91,"Prov. Papua Barat","2005 - 2009",0,0,0
+91,"Prov. Papua Barat","2011",0,0,0
+91,"Prov. Papua Barat","2012",0,0,0
+94,"Prov. Papua","2005 - 2009",0,0,0
+94,"Prov. Papua","2011",0,0,0
+94,"Prov. Papua","2012",0,0,0

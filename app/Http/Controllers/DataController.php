@@ -41,6 +41,7 @@ class DataController extends Controller
       $tablename = basename($destinationPath.'/'.$fileName, '.csv');
 
       Session::put('csv', $csv);
+      Session::put('csvpath', $path);
 
       // show uploaded data
       return view('dataset.uploadsetting', [
@@ -59,6 +60,7 @@ class DataController extends Controller
   { 
     $tablename = Input::get('tablename');
     $csv = Session::get('csv');
+    $path = Session::get('csvpath');
 
     // check if there is a table with the same name in the database
     if(!Schema::connection('dataset')->hasTable($tablename)){
@@ -154,10 +156,10 @@ class DataController extends Controller
   private function constructScript($header, $tablename) {
     $columndata = "";
     for ($i=0; $i < count($header) - 1; $i++) { 
-      $columndata = $columndata."`".$header[$i]."` VARCHAR(20) NULL,\n";
+      $columndata = $columndata."`".$header[$i]."` VARCHAR(100) NULL,\n";
     }
     // special case for last column
-    $columndata = $columndata."`".$header[count($header) - 1]."` VARCHAR(20) NULL";
+    $columndata = $columndata."`".$header[count($header) - 1]."` VARCHAR(100) NULL";
 
 
     return "CREATE TABLE IF NOT EXISTS `".$tablename."` (

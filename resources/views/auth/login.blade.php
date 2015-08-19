@@ -34,9 +34,15 @@
                                 <input type="password" class="form-control" name="password">
                             </div>
                         </div>
- 
-                        <div>
-                            <input type="checkbox" name="remember"> Remember Me
+
+                        <div class="form-group">
+                            <div class="col-sm-offset-4 col-sm-10">
+                              <div class="checkbox">
+                                <label>
+                                  <input type="checkbox" name="remember"> Remember me
+                                </label>
+                              </div>
+                            </div>
                         </div>
  
                         <div class="form-group">
@@ -47,7 +53,6 @@
                             </div>
                         </div>
                     </form>
-                    Click <a href="{{URL::to('auth/register')}}">here</a> to register.
                 </div>
             </div>
         </div>

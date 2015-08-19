@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use Input;
 use DB;
 use Session;
+use Auth;
 
 class IntegrationController extends Controller
 {
@@ -26,10 +27,10 @@ class IntegrationController extends Controller
         $dataset = \App\Dataset::findOrFail($mapping->datasetid);
         $tablename = $dataset->table_name;
         $attributes = $dataset->attributes()->get();
-        foreach ($mapping->mapping as $columnid) {
-            $header[] = $attributes[$columnid]->name;
-        }
-
+        // foreach ($mapping->mapping as $columnid) {
+        //     $header[] = $attributes[$columnid]->name;
+        // }
+        $header = $mapping->mappingname;
 
         // select only selected columns only
         $dataset = DB::connection('dataset')->table($tablename)->select($header)->get();
@@ -57,11 +58,21 @@ class IntegrationController extends Controller
         }
         //return response()->json($test);
 
-        Session::put('visdata', (object)[
+        $visdata = [
             'visualization' => $visualization->name,
             'category' => $category,
             'data' => $data
-        ]);
+        ];
+
+        Session::put('visdata', (object) $visdata);
+
+        // save configuration
+        $user = Auth::user();
+        $projectid = Session::get('visualizationid');
+
+        $project = $user->projects()->where('id', $projectid)->first();
+        $project->configuration = serialize($visdata);
+        $project->save();
 
         // Call the view and then wait for data request
         return view('visualization.view');
@@ -69,5 +80,15 @@ class IntegrationController extends Controller
 
     public function getData() {
         return response()->json(Session::get('visdata'));
+    }
+
+    public function getLoad($id) {
+        // load configuration
+        $user = Auth::user();
+
+        $project = $user->projects()->where('id', $id)->first();
+        Session::put('visdata', unserialize($project->configuration));
+
+        return view('visualization.view');
     }
 }

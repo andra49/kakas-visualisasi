@@ -25,9 +25,6 @@
                                     </div>
                                     @endforeach
                                     <div class="col-md-6 col-md-offset-4">
-                                        <label>
-                                            <input type="checkbox" ng-model="isExact"> Exact match
-                                        </label>
                                         <button class="btn btn-default" ng-click="loadRecommendation()">Masukkan</button>
                                     </div>
                                 </form>
@@ -35,12 +32,6 @@
                         </div>
                         <div class="col-md-6" >
                             <h4>Rekomendasi dari sistem</h4>
-                            <div class="panel panel-default" ng-repeat="recommendation in recommendations">
-                              <div class="panel-body">
-                                <% recommendation.visualization %> <a ng-href="{{URL::to('visualization')}}?mappingid=<% $index %>" class="btn btn-primary pull-right" role="button">Pilih</a>
-                              </div>
-                              <div class="panel-footer">Rating <strong><% recommendation.rating | number : 0 %></strong></div>
-                            </div>
                         </div>
                     </div>
                 </div>

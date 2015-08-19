@@ -50,7 +50,6 @@
                             </div>
                         </div>
                     </form>
-                    Click <a href="{{URL::to('auth/login')}}">here</a> to login.
                 </div>
             </div>
         </div>

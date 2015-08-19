@@ -5,16 +5,9 @@
 @endsection
 
 @section('content')
-<!DOCTYPE html>
-<html ng-app="visualisasi">
-    <head>
-        <title>Laravel</title>
-        <link href="{{ URL::asset('css/c3.css') }}" rel="stylesheet" type="text/css" >
-    </head>
     <body ng-controller="mainController">
         <div id="chart"></div>
     </body>
-</html>
 @endsection
 
 @section('jsimports')

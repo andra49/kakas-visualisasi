@@ -65,7 +65,7 @@ class RatingController extends Controller
             
             $dataset = Dataset::findOrFail(Input::get('datasetid'));
             $dataset->projects()->save($vis);
-            Session::put('projectid', $vis->id);
+            Session::put('visualizationid', $vis->id);
             return redirect('setup/rating');
         } else {
             return response()->json(['status' => 'failed']);            
@@ -162,7 +162,7 @@ class RatingController extends Controller
     public function matcher($dataset, $visualization)
     {
         // get number of data and visual variables
-        $numData = count($dataset->attributes);
+        $numData = count($dataset);
         $numVisual = count($visualization->visualVariables);
 
         // generate mappings
@@ -171,11 +171,6 @@ class RatingController extends Controller
         return $mappings;
     }
 
-
-    /*
-    *   TODO : Change to a more generic approach
-    *   TODO : Add other rating factors (user-shared, user and device information)
-    */
     public function getRating()
     {
         if (Session::get('visualizationid') == null) {
@@ -187,53 +182,88 @@ class RatingController extends Controller
             // load selected dataset
             $dataset = $project->dataset;
 
+            return view('rating.selectvisualization', [
+                'attributes' => $dataset->attributes
+            ]);
+            // return response()->json($dataset->attributes);
+        }
+    }
+
+    /*
+    *   TODO : Change to a more generic approach
+    *   TODO : Add other rating factors (user-shared, user and device information)
+    */
+    public function postRecommendation()
+    {
+        if (Session::get('visualizationid') == null) {
+            return redirect('setup');
+        } else {
+            // load project
+            $project = \App\VisualizationProject::findOrFail(Session::get('visualizationid'));
+
+            // load selected dataset
+            $dataset = $project->dataset;
+
+            // get attribute selection
+            $selection = Input::get('selection');
+
+            // is exact match?
+            $isExact = Input::get('exact');
+
             // TODO : load selected attributes
             $rating = [];
 
             foreach (Visualization::all() as $visualization) {
                 // PRE SELECTION
-                if (count($dataset->attributes) < count($visualization->visualVariables)) {
+                if (count($selection) < count($visualization->visualVariables)) {
                     // if the selected attributes is less than the number of visual variables needed
-                    // if ($visualization->id == 14)
-                    //     var_dump(count($visualization->visualVariables));exit();
+                    
                 } else {
+                    if (!$isExact || (count($selection) == count($visualization->visualVariables))) {
 
-                    // GENERATE MAPPINGS
-                    $mappings = $this->matcher($dataset, $visualization); // [0, 1], [0,2], ...
-                    $mappingsRating;
-                    $bestrating = 0;
+                        // GENERATE MAPPINGS
+                        $mappings = $this->matcher($selection, $visualization); // [0, 1], [0,2], ...
+                        $mappingsRating = null;
+                        $bestrating = 0;
 
-                    // GENERATE RATING FOR EACH MAPPING
-                    foreach ($mappings as $map) {
-                        // FACTUAL VISUALIZATION KNOWLEDGE
-                        $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $map);
-
-                        // select only the best mapping for each visualization
-                        if ($mapRating > $bestrating){
-                            $mappingsRating = (object) ['rating' => $mapRating, 'mapping' => $map];
-                            $bestrating = $mapRating;
-                        }
-                    }
-                    $visrating = (object) ['visualizationid' => $visualization->id,
-                        'visualization' => $visualization->name, 
-                        'rating' => $mappingsRating->rating, 
-                        'mapping' => $mappingsRating->mapping,
-                        'datasetid' => $dataset->id
-                    ];
-
-                    // check if there is other version of visualization is used (barchart and 2-data barchart)
-                    $exist = false;
-                    for ($i = 0; $i < count($rating); $i++) {
-                        if ($visrating->visualization == $rating[$i]->visualization) {
-                            if (count($visrating->mapping) >= count($rating[$i]->mapping)) {
-                                $rating[$i] = $visrating;
+                        // GENERATE RATING FOR EACH MAPPING
+                        foreach ($mappings as $map) {
+                            // FACTUAL VISUALIZATION KNOWLEDGE
+                            $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $selection, $map);
+                            // select only the best mapping for each visualization
+                            if ($mapRating > $bestrating){
+                                $mappingsRating = (object) ['rating' => $mapRating, 'mapping' => $map];
+                                $bestrating = $mapRating;
                             }
-                            $exist = true;
-                            break;
                         }
-                    }
-                    if (!$exist){
-                        $rating[] = $visrating;                
+
+                        $mappingname = [];
+                        foreach ($mappingsRating->mapping as $mapping) {
+                            $mappingname[] = $selection[$mapping];
+                        }
+
+                        $visrating = (object) ['visualizationid' => $visualization->id,
+                            'visualization' => $visualization->name, 
+                            'rating' => $mappingsRating->rating, 
+                            'mapping' => $mappingsRating->mapping,
+                            'mappingname' => $mappingname,
+                            'datasetid' => $dataset->id
+                        ];
+
+                        // check if there is other version of visualization is used (barchart and 2-data barchart)
+                        $exist = false;
+                        for ($i = 0; $i < count($rating); $i++) {
+                            if ($visrating->visualization == $rating[$i]->visualization) {
+                                if (count($visrating->mapping) >= count($rating[$i]->mapping)) {
+                                    $rating[$i] = $visrating;
+                                }
+                                $exist = true;
+                                break;
+                            }
+                        }
+                        if (!$exist){
+                            $rating[] = $visrating;                
+                        }
                     }
                 }
             }
@@ -244,15 +274,19 @@ class RatingController extends Controller
             // Save mappings to session
             Session::put('mappings', $rating);
 
-            return view('rating.selectvisualization', [
-                'configuration' => $rating
+            return response()->json([
+                'mappings' => $rating,
+
             ]);
+            // return view('rating.selectvisualization', [
+            //     'configuration' => $rating
+            // ]);
         }
 
         //return response()->json($rating);
     }
 
-    private function factualVisualizationKnowledge($visualization, $dataset, $map) {
+    private function factualVisualizationKnowledge($visualization, $dataset, $selection, $map) {
         // get visual variables
         $visualType = $visualization->visualVariables;
 
@@ -265,7 +299,9 @@ class RatingController extends Controller
         $mapRating = 0;
 
         for ($i=0; $i < $numVisualVariables; $i++) { 
-            $type = $dataType[$map[$i]]->data_variable_type;
+            //$type = $dataType[$map[$i]]->data_variable_type;
+            $type = $dataType->where('name', $selection[$i])->first()->data_variable_type;
+
             if ($type == 'nominal') {
                 $mapRating += $visualType[$i]->nominal_rating;
             } else if ($type == 'ordinal') {

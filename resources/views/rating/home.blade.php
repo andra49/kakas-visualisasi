@@ -10,19 +10,24 @@
 					<table class="table table-hover">
 						<thead>
 							<tr>
-								@foreach ($columnnames as $name)
-									<th>{{$name}}</th>
-								@endforeach
+								<th>ID</th>
+								<th>Nama Visualisasi</th>
 								<th>Pilihan</th>
 							</tr>
 						</thead>
 						<tbody>
 							@foreach ($data as $row)
 							<tr>
-								@foreach ($row as $cell)
-									<td>{{$cell}}</td>
-								@endforeach
-								<td><a href="{{URL::to('setup/visualization/'.$row['id'])}}" class="btn btn-default" role="button">Pilih</a></td>
+								<td>{{$row['id']}}</td>
+								<td>{{$row['name']}}</td>
+								<td>
+									<a href="{{URL::to('setup/visualization/'.$row['id'])}}" class="btn btn-default" role="button">Edit</a>
+									@if ($row['configuration'] == null)
+										<a href="{{URL::to('visualization/load/'.$row['id'])}}" class="btn btn-default" role="button" disabled>Tampilkan</a>
+									@else
+										<a href="{{URL::to('visualization/load/'.$row['id'])}}" class="btn btn-default" role="button">Tampilkan</a>
+									@endif
+								</td>
 							</tr>
 							@endforeach
 						</tbody>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="visualisasi">
     <head>
-        <title>Laravel</title>
+        <title>Kakas Visualisasi</title>
         @yield('cssimports')
         <link href="{{ URL::asset('css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" >
 
@@ -41,7 +41,7 @@
                     <li><a href="{{URL::to('auth/register')}}">Register</a></li>
                     <li><a href="{{URL::to('auth/login')}}">Login</a></li>
                 @else
-                    <li><a href="{{URL::to('auth/signout')}}">Sign out</a></li>
+                    <li><a href="{{URL::to('auth/logout')}}">Log out</a></li>
                 @endif
               </ul>
             </div><!-- /.navbar-collapse -->
