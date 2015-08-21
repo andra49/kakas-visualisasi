@@ -1,5 +1,21 @@
 angular.module('visualisasi')
 .controller('mainController', ['$scope', '$http', function($scope, $http) {
+	$scope.submitted = false;
+	$scope.submitRating = function(isPositive) {
+		var req = {
+			method: 'POST',
+			url: '/visualization/rating',
+			data: { isPositive: isPositive }
+		};
+
+		$http(req)
+			.then(function(response) {
+				console.log(response.data);
+		  		$scope.submitted = true;
+		  	}, function(response) {
+
+		  	});
+	}
 	$scope.loadChart = function(conf) {
 		var baseConfiguration = {
 			data: {
@@ -71,7 +87,21 @@ angular.module('visualisasi')
 		    	};
 		        break;
 		    case 'Bubble Plot': // bubble
-		    
+		    	baseConfiguration.data.type = 'scatter';
+		    	baseConfiguration.data.x = conf.data[0][0]; // get first column
+		    	baseConfiguration.axis = {
+		    		x: {
+		    			label: conf.data[0][0]
+		    		},
+		    		y: {
+		    			label: conf.data[0][1]
+		    		}
+		    	};
+		    	baseConfiguration.point = {
+		    		r: function(d) {
+		    			return d.value;
+		    		}
+		    	};
 		        break;
 		}
 		$scope.chart = c3.generate(baseConfiguration);

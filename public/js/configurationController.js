@@ -3,17 +3,22 @@ angular.module('visualisasi')
 	$scope.recommendations = [];
 	$scope.selection = [];
 	$scope.isExact = true;
+	$scope.isAggregate = false;
+	$scope.purpose = "ALL";
 
 	$scope.loadRecommendation = function() {
 		var req = {
 			method: 'POST',
 			url: 'recommendation',
 			data: { selection: $scope.selection,
-					exact: $scope.isExact }
+					aggregate: $scope.isAggregate,
+					exact: $scope.isExact,
+					purpose: $scope.purpose }
 		};
 
 		$http(req)
 			.then(function(response) {
+				console.log(response.data);
 		  		$scope.recommendations = response.data.mappings;
 		  	}, function(response) {
 
@@ -32,7 +37,5 @@ angular.module('visualisasi')
 	    else {
 	      $scope.selection.push(attribute);
 	    }
-
-	    console.log($scope.selection);
 	};
 }]);

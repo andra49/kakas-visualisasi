@@ -210,59 +210,68 @@ class RatingController extends Controller
             // is exact match?
             $isExact = Input::get('exact');
 
+            // has purpose type?
+            $purpose = Input::get('purpose');
+
+            // aggregate?
+            $isAggregate = Input::get('aggregate');
+            Session::put('aggregate', $isAggregate);
+
             // TODO : load selected attributes
             $rating = [];
 
             foreach (Visualization::all() as $visualization) {
                 // PRE SELECTION
-                if (count($selection) < count($visualization->visualVariables)) {
-                    // if the selected attributes is less than the number of visual variables needed
-                    
-                } else {
-                    if (!$isExact || (count($selection) == count($visualization->visualVariables))) {
+                if ($visualization->purpose_type == $purpose || $purpose == 'ALL') {
+                    if (count($selection) < count($visualization->visualVariables)) {
+                        // if the selected attributes is less than the number of visual variables needed
+                    } else {
+                        if (!$isExact || (count($selection) == count($visualization->visualVariables))) {
 
-                        // GENERATE MAPPINGS
-                        $mappings = $this->matcher($selection, $visualization); // [0, 1], [0,2], ...
-                        $mappingsRating = null;
-                        $bestrating = 0;
+                            // GENERATE MAPPINGS
+                            $mappings = $this->matcher($selection, $visualization); // [0, 1], [0,2], ...
+                            $mappingsRating = null;
+                            $bestrating = 0;
 
-                        // GENERATE RATING FOR EACH MAPPING
-                        foreach ($mappings as $map) {
-                            // FACTUAL VISUALIZATION KNOWLEDGE
-                            $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $selection, $map);
-                            // select only the best mapping for each visualization
-                            if ($mapRating > $bestrating){
-                                $mappingsRating = (object) ['rating' => $mapRating, 'mapping' => $map];
-                                $bestrating = $mapRating;
-                            }
-                        }
-
-                        $mappingname = [];
-                        foreach ($mappingsRating->mapping as $mapping) {
-                            $mappingname[] = $selection[$mapping];
-                        }
-
-                        $visrating = (object) ['visualizationid' => $visualization->id,
-                            'visualization' => $visualization->name, 
-                            'rating' => $mappingsRating->rating, 
-                            'mapping' => $mappingsRating->mapping,
-                            'mappingname' => $mappingname,
-                            'datasetid' => $dataset->id
-                        ];
-
-                        // check if there is other version of visualization is used (barchart and 2-data barchart)
-                        $exist = false;
-                        for ($i = 0; $i < count($rating); $i++) {
-                            if ($visrating->visualization == $rating[$i]->visualization) {
-                                if (count($visrating->mapping) >= count($rating[$i]->mapping)) {
-                                    $rating[$i] = $visrating;
+                            // GENERATE RATING FOR EACH MAPPING
+                            foreach ($mappings as $map) {
+                                // FACTUAL VISUALIZATION KNOWLEDGE
+                                $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $selection, $map);
+                                $temp[] = $map;
+                                // select only the best mapping for each visualization
+                                if ($mapRating > $bestrating){
+                                    $mappingsRating = (object) ['rating' => $mapRating, 'mapping' => $map];
+                                    $bestrating = $mapRating;
                                 }
-                                $exist = true;
-                                break;
                             }
-                        }
-                        if (!$exist){
-                            $rating[] = $visrating;                
+
+                            $mappingname = [];
+                            foreach ($mappingsRating->mapping as $mapping) {
+                                $mappingname[] = $selection[$mapping];
+                            }
+
+                            $visrating = (object) ['visualizationid' => $visualization->id,
+                                'visualization' => $visualization->name, 
+                                'rating' => $mappingsRating->rating, 
+                                'mapping' => $mappingsRating->mapping,
+                                'mappingname' => $mappingname,
+                                'datasetid' => $dataset->id
+                            ];
+
+                            // check if there is other version of visualization is used (barchart and 2-data barchart)
+                            $exist = false;
+                            for ($i = 0; $i < count($rating); $i++) {
+                                if ($visrating->visualization == $rating[$i]->visualization) {
+                                    if (count($visrating->mapping) >= count($rating[$i]->mapping)) {
+                                        $rating[$i] = $visrating;
+                                    }
+                                    $exist = true;
+                                    break;
+                                }
+                            }
+                            if (!$exist){
+                                $rating[] = $visrating;                
+                            }
                         }
                     }
                 }
@@ -275,8 +284,7 @@ class RatingController extends Controller
             Session::put('mappings', $rating);
 
             return response()->json([
-                'mappings' => $rating,
-
+                'mappings' => $rating
             ]);
             // return view('rating.selectvisualization', [
             //     'configuration' => $rating

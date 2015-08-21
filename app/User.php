@@ -28,6 +28,6 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     public function visualizations()
     {
-        return $this->belongsToMany('App\Visualization');
+        return $this->belongsToMany('App\Visualization')->withPivot('count');
     }
 }

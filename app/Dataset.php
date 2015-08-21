@@ -15,4 +15,9 @@ class Dataset extends Model
     {
         return $this->hasMany('App\Attribute');
     }
+
+    public function categories()
+    {
+        return $this->hasMany('App\InstanceCategory');
+    }
 }

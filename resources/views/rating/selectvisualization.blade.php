@@ -24,9 +24,22 @@
                                       </label>
                                     </div>
                                     @endforeach
+                                    <div class="form-group">
+                                        <label for="purpose">Tujuan visualisasi</label>
+                                        <select class="form-control" ng-model="purpose" id="purpose">
+                                            <option value="ALL">ALL</option>
+                                            <option value="COMPARE_CATEGORIES">COMPARE_CATEGORIES</option>
+                                            <option value="SHOW_COMPOSITION">SHOW_COMPOSITION</option>
+                                            <option value="TEMPORAL_DATA">TEMPORAL_DATA</option>
+                                            <option value="SHOW_RELATIONSHIP">SHOW_RELATIONSHIP</option>
+                                        </select>
+                                    </div>
                                     <div class="col-md-6 col-md-offset-4">
                                         <label>
                                             <input type="checkbox" ng-model="isExact"> Exact match
+                                        </label>
+                                        <label>
+                                            <input type="checkbox" ng-model="isAggregate"> Aggregate data
                                         </label>
                                         <button class="btn btn-default" ng-click="loadRecommendation()">Masukkan</button>
                                     </div>
@@ -35,6 +48,7 @@
                         </div>
                         <div class="col-md-6" >
                             <h4>Rekomendasi dari sistem</h4>
+                            <h5 ng-hide="recommendations.length > 0">Silahkan masukkan atribut</h5>
                             <div class="panel panel-default" ng-repeat="recommendation in recommendations">
                               <div class="panel-body">
                                 <% recommendation.visualization %> <a ng-href="{{URL::to('visualization')}}?mappingid=<% $index %>" class="btn btn-primary pull-right" role="button">Pilih</a>
