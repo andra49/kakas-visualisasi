@@ -121,26 +121,19 @@ class IntegrationController extends Controller
             $relation->pivot->save();
             $relation->save();
             //var_dump($relation->pivot->count);exit();
-        } else {
-            $user->visualizations()->attach($visualization, ['count' => 1]);
-        }
 
-        if ($relation->pivot->count == 3) {
-            // check if already has rating
-            $userrating = $user->ratings()->where('visualization_id', $visualization->id)->first();
-
-            if ($userrating == null) {
-                // set rating to 0.75 (white list)
-                $rating = new \App\Rating();
-                $rating->rating = 0.75;
-                $rating->visualization_id = $visualization->id;
-                $user->ratings()->save($rating);
-            } else {
-                if ($userrating->rating < 0.75) {
-                    $userrating->rating = 0.75;
-                    $userrating->save();
+            if ($relation->pivot->count == 3) {
+                // check if already has rating
+                $userrating = $relation->pivot->rating;
+                if ($userrating == null) {
+                    $relation->pivot->rating = 0.75;
+                    $relation->pivot->save();
+                    $relation->save();
+                    //var_dump($relation->pivot->rating);exit();
                 }
             }
+        } else {
+            $user->visualizations()->attach($visualization, ['count' => 1, 'rating' => null]);
         }
 
         // Call the view and then wait for data request
@@ -177,32 +170,18 @@ class IntegrationController extends Controller
     public function postRating() {
         // save rating
         $user = Auth::user();
-        $visualization = \App\Visualization::where('name', Session::get('visdata')['visualization'])->first();
-
-        $userrating = $user->ratings()->where('visualization_id', $visualization->id)->first();
+        $visualization = \App\Visualization::where('name', Session::get('visdata')->visualization)->first();
+        $relation = $user->visualizations()->where('visualization_id', $visualization->id)->first();
 
         if (Input::get('isPositive')) {
-            if ($userrating == null) {
-                // set rating to 0.75 (white list)
-                $rating = new \App\Rating();
-                $rating->rating = 1;
-                $rating->visualization_id = $visualization->id;
-                $user->ratings()->save($rating);
-            } else {
-                $userrating->rating = 1;
-                $userrating->save();
-            }   
+            // check if already has rating
+            $relation->pivot->rating = 1;
+            $relation->pivot->save();
+            $relation->save();
         } else {
-            if ($userrating == null) {
-                // set rating to 0.75 (white list)
-                $rating = new \App\Rating();
-                $rating->rating = 0;
-                $rating->visualization_id = $visualization->id;
-                $user->ratings()->save($rating);
-            } else {
-                $userrating->rating = 0;
-                $userrating->save();
-            }
+            $relation->pivot->rating = 0;
+            $relation->pivot->save();
+            $relation->save();
         }
     }
 }

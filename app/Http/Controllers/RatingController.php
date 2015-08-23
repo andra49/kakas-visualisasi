@@ -190,7 +190,6 @@ class RatingController extends Controller
     }
 
     /*
-    *   TODO : Change to a more generic approach
     *   TODO : Add other rating factors (user-shared, user and device information)
     */
     public function postRecommendation()
@@ -219,6 +218,7 @@ class RatingController extends Controller
 
             // TODO : load selected attributes
             $rating = [];
+            $dumpdata = [];
 
             foreach (Visualization::all() as $visualization) {
                 // PRE SELECTION
@@ -235,8 +235,24 @@ class RatingController extends Controller
 
                             // GENERATE RATING FOR EACH MAPPING
                             foreach ($mappings as $map) {
+                                $numFactors = 2;
+
                                 // FACTUAL VISUALIZATION KNOWLEDGE
                                 $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $selection, $map);
+
+                                // USER-SHARED KNOWLEDGE
+                                $vis = Visualization::where('name', $visualization->name)->first();
+                                $usersharedrating = $this->userSharedKnowledge($vis);
+                                //var_dump($usersharedrating);exit();
+                                if ($usersharedrating !== null){
+                                    $mapRating += $usersharedrating * 100;
+                                    $dumpdata[] = [$visualization->id, $usersharedrating];
+                                } else {
+                                    $numFactors--;
+                                }
+
+                                $mapRating /= $numFactors;
+
                                 $temp[] = $map;
                                 // select only the best mapping for each visualization
                                 if ($mapRating > $bestrating){
@@ -276,6 +292,8 @@ class RatingController extends Controller
                     }
                 }
             }
+
+            //var_dump($dumpdata);exit();
 
             // sort mapping
             usort($rating, array("App\Http\Controllers\RatingController", "cmp"));
@@ -327,8 +345,127 @@ class RatingController extends Controller
         return $mapRating;
     }
 
+    private function userSharedKnowledge($visualization) {
+        $user = Auth::user();
+        $visUser = $visualization->users()->where('user_id', $user->id)->first();
+        if ($visUser !== null) {
+            $userRating = $visUser->pivot->rating;
+            if ($userRating !== null) {
+                return $userRating;
+            } else {
+                return $this->generateUserRating($visualization->id, 2, 3);
+            }
+        } else {
+            return $this->generateUserRating($visualization->id, 2, 3);
+        }
+
+    }
+
     // sorter function
     public static function cmp($a, $b) {
        return $b->rating - $a->rating;
+    }
+
+    public function generateVectors() {
+        $visVector = [];
+        foreach (Visualization::all() as $visualization) {
+            $vector = [];
+            foreach (User::all() as $user) {
+                $rating = $visualization->users()->where('user_id', $user->id)->first();
+                if ($rating == null) {
+                    $vector[] = 0.5;
+                } else {
+                    if ($rating->pivot->rating === null) {
+                        $vector[] = 0.5;
+                    } else {
+                        $vector[] = $rating->pivot->rating;
+                    }
+                }
+            }
+            $visVector[] = $vector;
+        }
+        return $visVector;
+    }
+
+    // Using cosine based similarity
+    public function vectorSimilarity($vectorA, $vectorB) {
+        $vectors = [$vectorA, $vectorB];
+        if (count($vectorA) == count($vectorB)) {
+            // calculate dot product
+            $dotproduct = 0;
+            for ($i=0; $i < count($vectorA); $i++) { 
+                $dotproduct += $vectorA[$i] * $vectorB[$i];
+            }
+
+            // calculate scalar
+            $scalars = [];
+            foreach ($vectors as $vector) {
+                $scalar = 0;
+                foreach ($vector as $value) {
+                    $scalar += $value * $value;
+                }
+                $scalars[] = $scalar;
+            }
+
+            return $dotproduct/$scalars[1];
+        } else {
+            // error handling
+        }
+    }
+
+    // input : $similaritems = array of {similarity: x, visualization: id}
+    public function generatePrediction($similaritems, $vectors) {
+        $weight = 0;
+        $sum = 0;
+
+        foreach ($similaritems as $similaritem) {
+            $visualization = Visualization::find($similaritem->visualization);
+            $user = Auth::user();
+            $rating = $vectors[$similaritem->visualization - 1][$user->id - 1];
+
+            $weight += $similaritem->similarity * $rating;
+            $sum += $similaritem->similarity;
+        }
+        return $weight / $sum;
+    }
+
+    // neighbors : calculate based on how many closest neighbors, minVisRating : treshold of how many rating a visualization need to have
+    public function generateUserRating($visualizationid, $neighbors, $minVisRating) {
+        $visualizationVectors = $this->generateVectors();
+        $vectors = [];
+
+        $vector = $visualizationVectors[$visualizationid - 1];
+        for ($i=1; $i <= count($visualizationVectors); $i++) {
+            if (count(Visualization::find($i)->users) >= $minVisRating) {
+                $similaritem = (object) [];
+                if ($i == $visualizationid) {
+                
+                } else {
+                    $similaritem->similarity = $this->vectorSimilarity($vector, $visualizationVectors[$i]);
+                    $similaritem->visualization = $i;
+                    $vectors[] = $similaritem;
+                }
+            } else {
+                // skip if the visualization does not have enough rating by the users
+            }
+        }
+        // sort mapping
+        usort($vectors, array("App\Http\Controllers\RatingController", "compareSimilarity"));
+
+        $similaritems = [];
+        for ($i=0; $i < $neighbors && $i < count($vectors); $i++) { 
+            $similaritems[] = $vectors[$i];
+        }
+
+        if (count($similaritems) === 0) {
+            return null;
+        } else {
+            return $this->generatePrediction($similaritems, $visualizationVectors);
+        }
+    }
+
+    // sorter function
+    public static function compareSimilarity($a, $b) {
+       return $b->similarity - $a->similarity;
     }
 }

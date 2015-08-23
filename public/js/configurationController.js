@@ -37,5 +37,6 @@ angular.module('visualisasi')
 	    else {
 	      $scope.selection.push(attribute);
 	    }
+	    console.log($scope.selection);
 	};
 }]);
