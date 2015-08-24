@@ -30,8 +30,18 @@ class IntegrationController extends Controller
         
         $header = $mapping->mappingname;
 
+        // get project
+        $project = \App\VisualizationProject::findOrFail(Session::get('visualizationid'));
+
         // select only selected columns only
-        $datasetdata = DB::connection('dataset')->table($tablename)->select($header)->get();
+        $datasetdata = DB::connection('dataset')->table($tablename)->select($header);
+
+        foreach ($project->dataSelections as $selection) {
+            $datasetdata = $datasetdata->where($selection->column_name, $selection->operator, $selection->operand);
+        }
+
+        $datasetdata = $datasetdata->get();
+
 
         if (Session::get('aggregate')) {
             // aggregate dataset

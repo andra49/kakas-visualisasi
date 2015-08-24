@@ -166,4 +166,71 @@ class DataController extends Controller
         ".$columndata."
     )ENGINE = InnoDB;";
   }
+
+  public function getSelection($id) {
+    if ($id == null) {
+      return redirect('setup');
+    } else {
+      // load project
+      $project = \App\VisualizationProject::findOrFail($id);
+
+      // load selected dataset
+      $dataset = $project->dataset;
+      $dataSelections = [];
+
+      $headers = Schema::connection('dataset')->getColumnListing($dataset->table_name);
+
+      $stringHeaders = [];
+
+      foreach ($headers as $header) {
+        $cell = DB::connection('dataset')->table($dataset->table_name)->select($header)->first()->$header;
+        if (!is_numeric($cell)) {
+          $stringHeaders[] = $header;
+        }
+      }
+      
+      $data = DB::connection('dataset')->table($dataset->table_name);
+
+      foreach ($project->dataSelections as $selection) {
+        $data = $data->where($selection->column_name, $selection->operator, $selection->operand);
+        $dataSelections[] = $selection;
+      }
+
+      $data = $data->get();
+      
+      return view('dataset.dataselection', [
+          'projectid' => $id,
+          'data' => $data,
+          'filters' => $dataSelections,
+          'columnnames' => $headers,
+          'stringColumns' => $stringHeaders
+      ]);  
+    }
+  }
+
+  public function postSelection() {
+    $columnName = Input::get('column');
+    $operator = Input::get('operator');
+    $operand = Input::get('operand');
+    $projectid = Input::get('projectid');
+    $project = \App\VisualizationProject::findOrFail($projectid);
+
+    $selection = new \App\DataSelection;
+    $selection->column_name = $columnName;
+    $selection->operator = $operator;
+    $selection->operand = $operand;
+
+    $project->dataSelections()->save($selection);
+
+    return Redirect::to('/dataset/selection/'.$projectid);
+  }
+
+  public function postRemove() {
+    $projectid = Input::get('projectid');
+    $project = \App\VisualizationProject::findOrFail($projectid);
+    $selectionid = Input::get('selectionid');
+
+    $project->dataSelections()->where('id', $selectionid)->first()->delete();
+    return Redirect::to('/dataset/selection/'.$projectid);
+  }
 }

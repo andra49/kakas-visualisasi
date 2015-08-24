@@ -4,6 +4,7 @@
         <title>Kakas Visualisasi</title>
         @yield('cssimports')
         <link href="{{ URL::asset('css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" >
+        <link href="{{ URL::asset('css/app.css') }}" rel="stylesheet" type="text/css" >
 
         <link href="//fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
 

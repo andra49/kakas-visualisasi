@@ -21,7 +21,7 @@
 								<td>{{$row['id']}}</td>
 								<td>{{$row['name']}}</td>
 								<td>
-									<a href="{{URL::to('setup/visualization/'.$row['id'])}}" class="btn btn-default" role="button">Edit</a>
+									<a href="{{URL::to('dataset/selection/'.$row['id'])}}" class="btn btn-default" role="button">Edit</a>
 									@if ($row['configuration'] == null)
 										<a href="{{URL::to('visualization/load/'.$row['id'])}}" class="btn btn-default" role="button" disabled>Tampilkan</a>
 									@else
