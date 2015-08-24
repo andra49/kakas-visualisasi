@@ -240,6 +240,8 @@ class RatingController extends Controller
                                 // FACTUAL VISUALIZATION KNOWLEDGE
                                 $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $selection, $map);
 
+                                //$userDevice = $this
+
                                 // USER-SHARED KNOWLEDGE
                                 $vis = Visualization::where('name', $visualization->name)->first();
                                 $usersharedrating = $this->userSharedKnowledge($vis);
@@ -358,6 +360,10 @@ class RatingController extends Controller
         } else {
             return $this->generateUserRating($visualization->id, 2, 3);
         }
+
+    }
+
+    private function userDeviceInformation($visualization) {
 
     }
 

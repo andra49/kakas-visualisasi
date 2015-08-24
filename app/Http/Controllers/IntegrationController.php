@@ -122,30 +122,6 @@ class IntegrationController extends Controller
 
         Session::put('visdata', (object) $visdata);
 
-        // save user-visualization relation
-        $user = Auth::user();
-        $visualization = \App\Visualization::where('name', Session::get('visdata')->visualization)->first();
-        $relation = $user->visualizations()->where('visualization_id', $visualization->id)->first();
-        if ($relation != null){
-            $relation->pivot->count += 1;
-            $relation->pivot->save();
-            $relation->save();
-            //var_dump($relation->pivot->count);exit();
-
-            if ($relation->pivot->count == 3) {
-                // check if already has rating
-                $userrating = $relation->pivot->rating;
-                if ($userrating == null) {
-                    $relation->pivot->rating = 0.75;
-                    $relation->pivot->save();
-                    $relation->save();
-                    //var_dump($relation->pivot->rating);exit();
-                }
-            }
-        } else {
-            $user->visualizations()->attach($visualization, ['count' => 1, 'rating' => null]);
-        }
-
         // Call the view and then wait for data request
         return view('visualization.view');
     }
@@ -174,7 +150,50 @@ class IntegrationController extends Controller
             $project->configuration = serialize(Session::get('visdata'));
             $project->save();
         }
+
+        // save user-visualization relation
+        $visualization = \App\Visualization::where('name', Session::get('visdata')->visualization)->first();
+        $relation = $user->visualizations()->where('visualization_id', $visualization->id)->first();
+        if ($relation != null){
+            $relation->pivot->count += 1;
+            $relation->pivot->save();
+            $relation->save();
+
+            if ($relation->pivot->count == 3) {
+                // check if already has rating
+                $userrating = $relation->pivot->rating;
+                if ($userrating == null) {
+                    $relation->pivot->rating = 0.75;
+                    $relation->pivot->save();
+                    $relation->save();
+                }
+            }
+        } else {
+            $user->visualizations()->attach($visualization, ['count' => 1, 'rating' => null]);
+        }
+
         return redirect('setup');
+    }
+
+    public function postFeedback() {
+        $treshold = 5;
+        $time = Input::get('time');
+
+        // save rating
+        $user = Auth::user();
+        $visualization = \App\Visualization::where('name', Session::get('visdata')->visualization)->first();
+        $relation = $user->visualizations()->where('visualization_id', $visualization->id)->first();
+
+        if ($time < $treshold) {
+            // check if already has rating
+            if ($relation->pivot->rating === null) {
+                $relation->pivot->rating = 0.25;
+                $relation->pivot->save();
+                $relation->save();
+            }
+        }
+
+        return redirect('setup/rating');
     }
 
     public function postRating() {

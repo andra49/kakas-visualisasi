@@ -1,5 +1,7 @@
 angular.module('visualisasi')
-.controller('mainController', ['$scope', '$http', function($scope, $http) {
+.controller('mainController', ['$scope', '$http', '$interval', function($scope, $http, $interval) {
+	var delay = 1000;
+	$scope.currTime = 0;
 	$scope.submitted = false;
 	$scope.submitRating = function(isPositive) {
 		var req = {
@@ -16,6 +18,7 @@ angular.module('visualisasi')
 
 		  	});
 	}
+
 	$scope.loadChart = function(conf) {
 		var baseConfiguration = {
 			data: {
@@ -99,6 +102,7 @@ angular.module('visualisasi')
 		    	};
 		    	baseConfiguration.point = {
 		    		r: function(d) {
+		    			console.log(d);
 		    			return d.value;
 		    		}
 		    	};
@@ -106,10 +110,14 @@ angular.module('visualisasi')
 		}
 		$scope.chart = c3.generate(baseConfiguration);
 	}
+
 	$http.get('/visualization/data')
 	.then(function(response) {
   		console.log(response.data);
     	$scope.loadChart(response.data);
+    	$interval(function() {
+    		$scope.currTime += 1;
+    	}, delay);
   	}, function(response) {
 
   	});

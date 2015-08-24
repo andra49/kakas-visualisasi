@@ -17,6 +17,11 @@
         <div class="row">
             <div class="col-md-4 col-md-offset-4">
                 <a href="{{URL::to('visualization/save')}}" class="btn btn-primary" role="button">Simpan</a>
+                <form action="/visualization/feedback" method="POST">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="time" value="<%currTime%>">
+                    <input type="submit" class="btn btn-danger" value="Kembali">
+                </form>
             </div>
         </div>
     </body>
