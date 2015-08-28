@@ -37,13 +37,15 @@ angular.module('visualisasi')
 			    x: {
 			        type: 'category',
 			        tick: {
+			        	fit: false,
 		                rotate: 60,
 		                multiline: true
 		            }
 	            }
 			},
 			zoom: {
-				enabled: false
+				enabled: false,
+				rescale: true
 			},
 			subchart: {
 				enabled: false
@@ -115,37 +117,72 @@ angular.module('visualisasi')
 		    	baseConfiguration.data.groups = [groups];		
 		        break;
 		    case 'Scatter Plot': // scatter
-		    	baseConfiguration.data.type = 'scatter';
-		    	baseConfiguration.data.x = conf.data[0][0]; // get first column
 		    	baseConfiguration.axis = {
 		    		x: {
-		    			label: conf.data[0][0]
+		    			label: conf.data[0][1]
 		    		},
 		    		y: {
-		    			label: conf.data[0][1]
+		    			label: conf.data[0][2]
 		    		}
 		    	};
+		    	baseConfiguration.data.type = 'scatter';
+		    	var data = [];
+		    	var xs = {};
+		    	for (var i = 1; i < conf.data.length; i++) {
+		    		var category_x = conf.data[i][0]+"_x";
+		    		var category = conf.data[i][0];
+		    		data.push([category_x, conf.data[i][1]]);
+		    		data.push([category, conf.data[i][2]]);
+		    		xs[category] = category_x;
+		    	};
+		    	baseConfiguration.data.rows = null;
+		    	baseConfiguration.data.columns = data;
+		    	baseConfiguration.data.x = null;
+		    	baseConfiguration.data.xs = xs;
 		        break;
 		    case 'Bubble Plot': // bubble
-		    	baseConfiguration.data.type = 'scatter';
-		    	baseConfiguration.data.x = conf.data[0][0]; // get first column
 		    	baseConfiguration.axis = {
 		    		x: {
-		    			label: conf.data[0][0]
+		    			label: conf.data[0][1],
+			        	tick: {
+			        		fit: false
+			        	}
 		    		},
 		    		y: {
-		    			label: conf.data[0][1]
+		    			label: conf.data[0][2]
 		    		}
 		    	};
+		    	baseConfiguration.data.type = 'scatter';
+		    	var data = [];
+		    	var xs = {};
+		    	var values = {};
+		    	for (var i = 1; i < conf.data.length; i++) {
+		    		var category_x = conf.data[i][0]+"_x";
+		    		var category = conf.data[i][0];
+		    		var value = conf.data[i][3];
+		    		data.push([category_x, conf.data[i][1]]);
+		    		data.push([category, conf.data[i][2]]);
+		    		values[category] = (value);
+		    		xs[category] = category_x;
+		    	};
+		    	var maxValue = 0;
+		    	for (var i = 0; i < data.length; i++) {
+		    		if (maxValue < values[data[i][0]])
+		    			maxValue = values[data[i][0]];
+		    	};
+		    	baseConfiguration.data.rows = null;
+		    	baseConfiguration.data.columns = data;
+		    	baseConfiguration.data.x = null;
+		    	baseConfiguration.data.xs = xs;
+		    	var maxBubbleSize = 50;
 		    	baseConfiguration.point = {
-		    		r: function(d) {
-		    			console.log(d);
-		    			return d.value;
-		    		}
-		    	};
+		    		r:  function(d) {
+			       		return (values[d.id]/maxValue) * maxBubbleSize;
+			    	}
+			    }
 		        break;
 		}
-		console.log(baseConfiguration);
+		console.log(JSON.stringify(baseConfiguration.data));
 		$scope.chart = c3.generate(baseConfiguration);
 	}
 
