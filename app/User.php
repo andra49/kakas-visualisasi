@@ -12,7 +12,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 {
     use Authenticatable, CanResetPassword;
 
-    protected $fillable = ['username', 'password'];
+    protected $fillable = ['username', 'password', 'role'];
     protected $hidden = ['password'];
     public $timestamps = false;
 
@@ -28,6 +28,6 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     public function visualizations()
     {
-        return $this->belongsToMany('App\Visualization')->withPivot(['count', 'rating']);
+        return $this->belongsToMany('App\Visualization')->withPivot(['count', 'rating', 'knowledge']);
     }
 }

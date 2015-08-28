@@ -1,0 +1,14 @@
+.likert li {
+  float: left;
+  list-style-type: none;
+  margin-left: 10px;
+}
+
+.panel-heading {
+    background-color: #3F51B5 !important;
+    color: #fff !important;
+}
+
+body {
+	background-color: #E8EAF6 !important;
+}

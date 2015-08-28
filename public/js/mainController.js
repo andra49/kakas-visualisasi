@@ -21,16 +21,53 @@ angular.module('visualisasi')
 
 	$scope.loadChart = function(conf) {
 		var baseConfiguration = {
+			size: {
+				height: 480
+			},
 			data: {
 				x: conf.category,
 				rows: conf.data
 			},
 			axis: {
+				y : {
+		            tick: {
+		                format: d3.format("s")
+		            }
+		        },
 			    x: {
-			        type: 'category'
-			    }
+			        type: 'category',
+			        tick: {
+		                rotate: 60,
+		                multiline: true
+		            }
+	            }
+			},
+			zoom: {
+				enabled: false
+			},
+			subchart: {
+				enabled: false
 			}
 		};
+
+		// set interactive features
+		var md = new MobileDetect(window.navigator.userAgent);
+		var mobile = false;
+		if (md.mobile())
+			mobile = true;
+		for (var i = 0; i < conf.activities.length; i++) {
+			switch(conf.activities[i].name) {
+				case 'zooming':
+					baseConfiguration.zoom.enabled = true;
+					break;
+				case 'brushing':
+					if (!mobile) {
+						baseConfiguration.subchart.show = true;
+					}
+					break;
+			}
+		};
+
 		// get selected visualization
 		switch(conf.visualization) {
 		    case 'Bar Chart': // bar chart
@@ -108,6 +145,7 @@ angular.module('visualisasi')
 		    	};
 		        break;
 		}
+		console.log(baseConfiguration);
 		$scope.chart = c3.generate(baseConfiguration);
 	}
 

@@ -35,9 +35,19 @@ class IntegrationController extends Controller
 
         // select only selected columns only
         $datasetdata = DB::connection('dataset')->table($tablename)->select($header);
+        $sortdata = null;
 
         foreach ($project->dataSelections as $selection) {
-            $datasetdata = $datasetdata->where($selection->column_name, $selection->operator, $selection->operand);
+            if ($selection->operand == "##SORTBY##") {
+                $sortdata = $selection;
+            } else {
+                $datasetdata = $datasetdata->where($selection->column_name, $selection->operator, $selection->operand);
+            }
+        }
+
+        if ($sortdata !== null) {
+            $sorttype = ($sortdata->operator == '>') ? 'asc' : 'desc';
+            $datasetdata = $datasetdata->orderBy($sortdata->column_name, $sorttype);
         }
 
         $datasetdata = $datasetdata->get();
@@ -117,13 +127,16 @@ class IntegrationController extends Controller
             'visualization' => $visualization->name,
             'category' => $category,
             'header' => $header,
-            'data' => $data
+            'data' => $data,
+            'activities' => $visualization->activities
         ];
 
         Session::put('visdata', (object) $visdata);
 
         // Call the view and then wait for data request
-        return view('visualization.view');
+        return view('visualization.view', [
+            'projectname' => $project->name
+        ]);
     }
 
     public function getData() {
@@ -137,7 +150,9 @@ class IntegrationController extends Controller
         $project = $user->projects()->where('id', $id)->first();
         Session::put('visdata', unserialize($project->configuration));
 
-        return view('visualization.view');
+        return view('visualization.view', [
+            'projectname' => $project->name
+        ]);
     }
 
     public function getSave() {

@@ -10,7 +10,6 @@
 					<table class="table table-hover">
 						<thead>
 							<tr>
-								<th>ID</th>
 								<th>Nama Visualisasi</th>
 								<th>Pilihan</th>
 							</tr>
@@ -18,12 +17,11 @@
 						<tbody>
 							@foreach ($data as $row)
 							<tr>
-								<td>{{$row['id']}}</td>
 								<td>{{$row['name']}}</td>
 								<td>
 									<a href="{{URL::to('dataset/selection/'.$row['id'])}}" class="btn btn-default" role="button">Edit</a>
 									@if ($row['configuration'] == null)
-										<a href="{{URL::to('visualization/load/'.$row['id'])}}" class="btn btn-default" role="button" disabled>Tampilkan</a>
+										<a href="{{URL::to('visualization/load/'.$row['id'])}}" class="btn btn-default disabled" role="button">Tampilkan</a>
 									@else
 										<a href="{{URL::to('visualization/load/'.$row['id'])}}" class="btn btn-default" role="button">Tampilkan</a>
 									@endif

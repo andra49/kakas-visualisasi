@@ -15,7 +15,17 @@ class Visualization extends Model
 
     public function users()
     {
-        return $this->belongsToMany('App\User')->withPivot(['count', 'rating']);
+        return $this->belongsToMany('App\User')->withPivot(['count', 'rating', 'knowledge']);
+    }
+
+    public function systems()
+    {
+        return $this->belongsToMany('App\System')->withPivot(['rating']);
+    }
+
+    public function activities()
+    {
+        return $this->belongsToMany('App\Activity');
     }
 
     public function visualVariables()

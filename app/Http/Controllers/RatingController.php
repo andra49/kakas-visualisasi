@@ -25,16 +25,6 @@ class RatingController extends Controller
      */
     public function getIndex()
     {
-        // $dataset = Dataset::all(['id', 'table_name']);
-        // $names = [];
-        // foreach ($dataset as $table_name) {
-        //     $names[] = $table_name->table_name;
-        // }
-
-        // return view('rating.selectdataset', [
-        //     'datasets' => $dataset
-        // ]);
-
         // get current user data
         $user = Auth::user();
 
@@ -66,7 +56,7 @@ class RatingController extends Controller
             $dataset = Dataset::findOrFail(Input::get('datasetid'));
             $dataset->projects()->save($vis);
             Session::put('visualizationid', $vis->id);
-            return redirect('setup/rating');
+            return redirect('dataset/selection/'.$vis->id);
         } else {
             return response()->json(['status' => 'failed']);            
         }
@@ -120,9 +110,7 @@ class RatingController extends Controller
             $this->permutation($n - 1, $arr);
         }
     }
-    /*
-    *   TODO : DONE!
-    */
+
     public function mapper($numData, $numVisual)
     {
         // initialize data
@@ -189,9 +177,6 @@ class RatingController extends Controller
         }
     }
 
-    /*
-    *   TODO : Add other rating factors (user-shared, user and device information)
-    */
     public function postRecommendation()
     {
         if (Session::get('visualizationid') == null) {
@@ -212,11 +197,13 @@ class RatingController extends Controller
             // has purpose type?
             $purpose = Input::get('purpose');
 
+            // on mobile?
+            $isMobile = Input::get('mobile');
+
             // aggregate?
-            $isAggregate = Input::get('aggregate');
+            $isAggregate = false;//Input::get('aggregate');
             Session::put('aggregate', $isAggregate);
 
-            // TODO : load selected attributes
             $rating = [];
             $dumpdata = [];
 
@@ -235,20 +222,23 @@ class RatingController extends Controller
 
                             // GENERATE RATING FOR EACH MAPPING
                             foreach ($mappings as $map) {
-                                $numFactors = 2;
+                                $mapRating = 0;
+                                $numFactors = 3;
 
                                 // FACTUAL VISUALIZATION KNOWLEDGE
-                                $mapRating = $this->factualVisualizationKnowledge($visualization, $dataset, $selection, $map);
+                                $factual = $this->factualVisualizationKnowledge($visualization, $dataset, $selection, $map);
+                                $mapRating += $factual;
 
-                                //$userDevice = $this
+                                // USER & DEVICE INFORMATION
+                                $userdevice = $this->userDeviceInformation($visualization, $isMobile);
+                                $mapRating += $userdevice;
 
                                 // USER-SHARED KNOWLEDGE
                                 $vis = Visualization::where('name', $visualization->name)->first();
                                 $usersharedrating = $this->userSharedKnowledge($vis);
-                                //var_dump($usersharedrating);exit();
                                 if ($usersharedrating !== null){
-                                    $mapRating += $usersharedrating * 100;
-                                    $dumpdata[] = [$visualization->id, $usersharedrating];
+                                    $usershared = $usersharedrating * 100;
+                                    $mapRating += $usershared;
                                 } else {
                                     $numFactors--;
                                 }
@@ -258,7 +248,7 @@ class RatingController extends Controller
                                 $temp[] = $map;
                                 // select only the best mapping for each visualization
                                 if ($mapRating > $bestrating){
-                                    $mappingsRating = (object) ['rating' => $mapRating, 'mapping' => $map];
+                                    $mappingsRating = (object) ['rating' => $mapRating, 'mapping' => $map, 'scores' => [$factual, $userdevice, $usershared]];
                                     $bestrating = $mapRating;
                                 }
                             }
@@ -270,7 +260,8 @@ class RatingController extends Controller
 
                             $visrating = (object) ['visualizationid' => $visualization->id,
                                 'visualization' => $visualization->name, 
-                                'rating' => $mappingsRating->rating, 
+                                'rating' => $mappingsRating->rating,
+                                'scores' => $mappingsRating->scores,
                                 'mapping' => $mappingsRating->mapping,
                                 'mappingname' => $mappingname,
                                 'datasetid' => $dataset->id
@@ -295,8 +286,6 @@ class RatingController extends Controller
                 }
             }
 
-            //var_dump($dumpdata);exit();
-
             // sort mapping
             usort($rating, array("App\Http\Controllers\RatingController", "cmp"));
 
@@ -306,12 +295,7 @@ class RatingController extends Controller
             return response()->json([
                 'mappings' => $rating
             ]);
-            // return view('rating.selectvisualization', [
-            //     'configuration' => $rating
-            // ]);
         }
-
-        //return response()->json($rating);
     }
 
     private function factualVisualizationKnowledge($visualization, $dataset, $selection, $map) {
@@ -328,7 +312,8 @@ class RatingController extends Controller
 
         for ($i=0; $i < $numVisualVariables; $i++) { 
             //$type = $dataType[$map[$i]]->data_variable_type;
-            $type = $dataType->where('name', $selection[$i])->first()->data_variable_type;
+            $name = $selection[$map[$i]];
+            $type = $dataType->where('name', $name)->first()->data_variable_type;
 
             if ($type == 'nominal') {
                 $mapRating += $visualType[$i]->nominal_rating;
@@ -347,13 +332,20 @@ class RatingController extends Controller
         return $mapRating;
     }
 
-    private function userSharedKnowledge($visualization) {
+    private function userSharedKnowledge($vis) {
         $user = Auth::user();
+        $visualization = \App\Visualization::where('name', $vis->name)->first();
         $visUser = $visualization->users()->where('user_id', $user->id)->first();
         if ($visUser !== null) {
             $userRating = $visUser->pivot->rating;
             if ($userRating !== null) {
-                return $userRating;
+                if ($userRating == 1) {
+                    return 0.75;
+                } else if ($userRating == 0) {
+                    return 0.25;
+                } else {
+                    return $userRating;
+                }
             } else {
                 return $this->generateUserRating($visualization->id, 2, 3);
             }
@@ -363,8 +355,22 @@ class RatingController extends Controller
 
     }
 
-    private function userDeviceInformation($visualization) {
+    private function userDeviceInformation($visualization, $isMobile) {
+        $rating = 0;
+        // user rating
+        $user = Auth::user();
+        $userknowledge = $user->visualizations()->where('name', $visualization->name)->first();
+        $rating += ($userknowledge->pivot->knowledge / 5) * 100;
 
+        if ($isMobile) {
+            // device rating
+            $device = $visualization->systems()->where('name', 'tablet')->first();
+        } else {
+            $device = $visualization->systems()->where('name', 'desktop')->first();
+        }
+
+        $rating += ($device->pivot->rating / 3) * 100;
+        return $rating/2;
     }
 
     // sorter function
@@ -423,11 +429,19 @@ class RatingController extends Controller
     public function generatePrediction($similaritems, $vectors) {
         $weight = 0;
         $sum = 0;
+        $user = Auth::user();
+        $users = \App\User::all();
+        $index = 0;
+        for ($i=0; $i < count($users); $i++) { 
+            if ($users[$i]->id == $user->id) {
+                $index = $i;
+                break;
+            }
+        }
 
         foreach ($similaritems as $similaritem) {
             $visualization = Visualization::find($similaritem->visualization);
-            $user = Auth::user();
-            $rating = $vectors[$similaritem->visualization - 1][$user->id - 1];
+            $rating = $vectors[$similaritem->visualization - 1][$index];
 
             $weight += $similaritem->similarity * $rating;
             $sum += $similaritem->similarity;
@@ -442,7 +456,7 @@ class RatingController extends Controller
 
         $vector = $visualizationVectors[$visualizationid - 1];
         for ($i=1; $i <= count($visualizationVectors); $i++) {
-            if (count(Visualization::find($i)->users) >= $minVisRating) {
+            if (count(Visualization::all()[$i - 1]->users) >= $minVisRating) {
                 $similaritem = (object) [];
                 if ($i == $visualizationid) {
                 

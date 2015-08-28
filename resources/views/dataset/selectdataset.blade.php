@@ -17,12 +17,19 @@
 							</tr>
 						</thead>
 						<tbody>
-							@foreach ($data as $row)
+							@foreach ($data as $key => $row)
 							<tr>
 								@foreach ($row as $cell)
 									<td>{{$cell}}</td>
 								@endforeach
-								<td><button>Pilih</button></td>
+								<td>
+									<a href="{{URL::to('dataset/edit/'.$row['id'])}}" class="btn btn-default" role="button">Edit</a>
+									@if ($hasVisualization[$key])
+										<a href="{{URL::to('dataset/delete/'.$row['id'])}}" class="btn btn-danger" role="button" disabled>Hapus</a>
+									@else
+										<a href="{{URL::to('dataset/delete/'.$row['id'])}}" class="btn btn-danger" role="button">Hapus</a>
+									@endif
+								</td>
 							</tr>
 							@endforeach
 						</tbody>

@@ -17,6 +17,7 @@
                           @endif
                           <div class="secure">Upload dataset</div>
                           {!! Form::open(array('url'=>'dataset/upload','method'=>'POST', 'files'=>true)) !!}
+                           <input type="hidden" name="_token" value="{{ csrf_token() }}">
                            <div class="control-group">
                             <div class="controls">
                             {!! Form::file('dataset') !!}
@@ -26,7 +27,7 @@
                             @endif
                           </div>
                           <div id="success"> </div>
-                          {!! Form::submit('Submit', array('class'=>'send-btn')) !!}
+                          {!! Form::submit('Submit', array('class'=>'btn btn-default send-btn pull-right')) !!}
                           {!! Form::close() !!}
                         </div>
                      </div>

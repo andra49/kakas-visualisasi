@@ -29,6 +29,16 @@
                         </div>
  
                         <div class="form-group">
+                            <label class="col-md-4 control-label">Kategori Pengguna</label>
+                            <div class="col-md-6">
+                                <select class="form-control" name="role">
+                                    <option value="administrator">Administrator</option>
+                                    <option value="analis">Data Analis</option>
+                                </select>
+                            </div>
+                        </div>
+ 
+                        <div class="form-group">
                             <label class="col-md-4 control-label">Password</label>
                             <div class="col-md-6">
                                 <input type="password" class="form-control" name="password">

@@ -15,6 +15,9 @@ class RouteServiceProvider extends ServiceProvider
      * @var string
      */
     protected $namespace = 'App\Http\Controllers';
+    protected $middleware = [
+      'cors'  => 'App\Http\Middleware\CORSSetup'
+    ];
 
     /**
      * Define your route model bindings, pattern filters, etc.

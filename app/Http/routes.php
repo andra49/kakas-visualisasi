@@ -10,6 +10,8 @@
 | and give it the controller to call when that URI is requested.
 |
 */
+header("Access-Control-Allow-Origin: *");
+
 Route::group(['middleware' => 'auth'], function() {
 	Route::controller('dataset', 'DataController');
 
@@ -18,6 +20,8 @@ Route::group(['middleware' => 'auth'], function() {
 	Route::controller('setup', 'RatingController');
 
 	Route::controller('visualization', 'IntegrationController');
+
+	Route::controller('user', 'UserController');
 });
 
 // Authentication routes...
