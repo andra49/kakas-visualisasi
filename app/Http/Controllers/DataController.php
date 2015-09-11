@@ -104,13 +104,14 @@ class DataController extends Controller
   public function postConfiguration() 
   { 
     $tablename = Input::get('tablename');
+    $header = Input::get('header');
     $csv = Session::get('csv');
     $path = Session::get('csvpath');
 
     // check if there is a table with the same name in the database
     if(!Schema::connection('dataset')->hasTable($tablename)){
       // Save to database  
-      $this->saveToDB($path, $tablename, $csv[0], $csv);
+      $this->saveToDB($path, $tablename, $header, $csv);
       // sending back with message
       Session::flash('success', 'Uploaded successfully'); 
     } else {
@@ -118,26 +119,25 @@ class DataController extends Controller
       Session::flash('error', 'Dataset with the same name already exist in database');
     }
 
-    return Redirect::to('dataset/upload');
+    $dataset = \App\Dataset::where('table_name', $tablename)->first();
+    return Redirect::to('dataset/edit/'.$dataset->id);
   }
 
-  public function checkData()
-  {
-    $file = Input::file('dataset');
-    // checking file is valid.
-    if (Input::file('dataset')->isValid()) {
-      $destinationPath = 'uploads'; // upload path
-      $extension = Input::file('dataset')->getClientOriginalExtension(); // getting dataset extension
-      $fileName = $file->getClientOriginalName(); // renaming dataset
-      Input::file('dataset')->move($destinationPath, $fileName); // uploading file to given path
+  // public function checkData()
+  // {
+  //   $file = Input::file('dataset');
+  //   // checking file is valid.
+  //   if (Input::file('dataset')->isValid()) {
+  //     $destinationPath = 'uploads'; // upload path
+  //     $extension = Input::file('dataset')->getClientOriginalExtension(); // getting dataset extension
+  //     $fileName = $file->getClientOriginalName(); // renaming dataset
+  //     Input::file('dataset')->move($destinationPath, $fileName); // uploading file to given path
 
-      $path = $destinationPath.'/'.$fileName;
-      $csv = array_map("str_getcsv", file($path, FILE_SKIP_EMPTY_LINES));
-      $tablename = basename($destinationPath.'/'.$fileName, '.csv');
-      
-      var_dump(DB::connection('dataset')->table($tablename)->select('BUS/Truck')->distinct()->get()); exit();
-    }
-  }
+  //     $path = $destinationPath.'/'.$fileName;
+  //     $csv = array_map("str_getcsv", file($path, FILE_SKIP_EMPTY_LINES));
+  //     $tablename = basename($destinationPath.'/'.$fileName, '.csv');
+  //   }
+  // }
 
   private function saveToDB($path, $tablename, $header, $data) {
     // create new table on database 'kakas_database'
@@ -145,7 +145,7 @@ class DataController extends Controller
     $keys = array_shift($data);
     foreach ($data as $i=>$row) {
         // insert the data
-        DB::connection('dataset')->table($tablename)->insert(array_combine($keys, $row));
+        DB::connection('dataset')->table($tablename)->insert(array_combine($header, $row));
     }
 
     // save metamodel to main db

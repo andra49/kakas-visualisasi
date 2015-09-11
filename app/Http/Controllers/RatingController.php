@@ -347,10 +347,10 @@ class RatingController extends Controller
                     return $userRating;
                 }
             } else {
-                return $this->generateUserRating($visualization->id, 2, 3);
+                return $this->generateUserRating($visualization->id, 4, 4);
             }
         } else {
-            return $this->generateUserRating($visualization->id, 2, 3);
+            return $this->generateUserRating($visualization->id, 4, 4);
         }
 
     }

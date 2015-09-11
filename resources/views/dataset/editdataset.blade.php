@@ -49,6 +49,16 @@
 				</div>
 			</div>
 		</div>
+        <div class="col-md-2">
+            <div class="panel panel-default" style="margin-top: 100px;">
+                <div class="panel-heading"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>&nbsp;Tentang Variabel Data</div>
+                <div class="panel-body">
+                	<p><strong>Nominal</strong><br>Data bertipe kategori namun antar kategorinya tidak dapat dibandingan. Contoh: Nama negara, gender.</p>
+                	<p><strong>Ordinal</strong><br>Data bertipe kategori dapat dibandingan antar kategorinya. Contoh: Medali (emas, perak, perunggu).</p>
+                	<p><strong>Kuantitatif</strong><br>Data yang menujukkan nilai secara kuantitas. Contoh: Harga, Jumlah.</p>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 @endsection

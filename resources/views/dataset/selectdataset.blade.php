@@ -27,7 +27,7 @@
 									@if ($hasVisualization[$key])
 										<a href="{{URL::to('dataset/delete/'.$row['id'])}}" class="btn btn-danger" role="button" disabled>Hapus</a>
 									@else
-										<a href="{{URL::to('dataset/delete/'.$row['id'])}}" class="btn btn-danger" role="button">Hapus</a>
+										<input type="button" class="btn btn-danger" onclick="confirmation({{$row['id']}})" value="Hapus">
 									@endif
 								</td>
 							</tr>
@@ -40,4 +40,15 @@
 		</div>
 	</div>
 </div>
+@endsection
+
+@section('jsimports')
+<script type="text/javascript">
+	function confirmation(id) {
+		var conf = confirm("Apakah Anda ingin menghapus dataset ini?");
+		if (conf) {
+			window.location = "{{URL::to('dataset/delete')}}/"+id;
+		}
+	}
+</script>
 @endsection

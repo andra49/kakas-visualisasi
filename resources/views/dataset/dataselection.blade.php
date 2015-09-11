@@ -71,6 +71,7 @@
 										  <option ng-hide="disable" value=">=">>=</option>
 										  <option ng-hide="disable" value="<"><</option>
 										  <option ng-hide="disable" value="<="><=</option>
+										  <option ng-show="disable" value="!=">Tidak Sama dengan</option>
 										  <option ng-show="disable" value="=">Sama dengan</option>
 										  <option ng-show="disable" value="start">Diawali</option>
 										  <option ng-show="disable" value="with">Mengandung</option>

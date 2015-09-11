@@ -113,11 +113,11 @@ class IntegrationController extends Controller
         // get visualization visual variable information
         $visualization = \App\Visualization::findOrFail($mapping->visualizationid);
 
-        $category = null; // save which data/column is used as category
+        $category = []; // save which data/column is used as category
 
         for ($i=0; $i < count($visualization->visualVariables); $i++) { 
             if($visualization->visualVariables[$i]->pivot->type == "category"){
-                $category = $header[$i];
+                $category[] = $header[$i];
             }
             $test[] = [$i, $visualization->visualVariables[$i]->pivot->type];
         }

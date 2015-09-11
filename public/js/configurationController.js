@@ -6,8 +6,10 @@ angular.module('visualisasi')
 	$scope.isExact = true;
 	$scope.isAggregate = false;
 	$scope.purpose = "ALL";
+	$scope.loading = false;
 
 	$scope.loadRecommendation = function() {
+		$scope.loading = true;
 		var md = new MobileDetect(window.navigator.userAgent);
 		var mobile = false;
 		if (md.mobile())
@@ -26,6 +28,7 @@ angular.module('visualisasi')
 		$http(req)
 			.then(function(response) {
 				console.log(response.data);
+				$scope.loading = false;
 		  		$scope.recommendations = response.data.mappings;
 		  	}, function(response) {
 		  		

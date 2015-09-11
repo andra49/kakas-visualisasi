@@ -3,6 +3,7 @@ angular.module('visualisasi')
 	var delay = 1000;
 	$scope.currTime = 0;
 	$scope.submitted = false;
+	$scope.loading = true;
 	$scope.submitRating = function(isPositive) {
 		var req = {
 			method: 'POST',
@@ -25,7 +26,7 @@ angular.module('visualisasi')
 				height: 480
 			},
 			data: {
-				x: conf.category,
+				x: conf.category[0],
 				rows: conf.data
 			},
 			axis: {
@@ -37,12 +38,16 @@ angular.module('visualisasi')
 			    x: {
 			        type: 'category',
 			        tick: {
-			        	fit: false,
 		                rotate: 60,
 		                multiline: true
 		            }
 	            }
 			},
+			grid: {
+				y: {
+        			lines: [{value:0}]
+        		}
+        	},
 			zoom: {
 				enabled: false,
 				rescale: true
@@ -85,41 +90,47 @@ angular.module('visualisasi')
 		    	baseConfiguration.data.type = 'pie';
 		    	baseConfiguration.data.rows = null;
 		    	baseConfiguration.data.x = null;
-		    	var columndata = [];
-		    	for (var i = 1; i < conf.data.length; i++) {
-		    		columndata.push(conf.data[i]);
-		    	};
-		    	console.log(columndata);
-		    	baseConfiguration.data.columns = columndata;
+		    	conf.data.shift();
+		    	baseConfiguration.data.columns = conf.data;
+		    	baseConfiguration.grid = null;
 		        break;
 		    case 'Stacked Bar Chart': // stacked bar
 		    	baseConfiguration.data.type = 'bar';
 		    	var groups = [];
 		    	for (var i = 0; i < conf.data[0].length; i++) {
-		    		if (conf.data[0][i] != conf.category)
+		    		if (conf.data[0][i] != conf.category[0])
 		    			groups.push(conf.data[0][i]);
 		    	};
 		    	baseConfiguration.data.groups = [groups];
 		        break;
 		    case 'Line Chart': // line	
-		    	// default is line, do nothing
+		    	
 		        break;
 		    case 'Area Chart': // area
-		    	baseConfiguration.data.type = 'area';		    
+		    	baseConfiguration.data.type = 'area';
+		    	baseConfiguration.area = {
+				  zerobased: false
+				}		    
 		        break;
 		    case 'Stacked Area Chart': // stacked area
 		    	baseConfiguration.data.type = 'area';
 		    	var groups = [];
 		    	for (var i = 0; i < conf.data[0].length; i++) {
-		    		if (conf.data[0][i] != conf.category)
+		    		if (conf.data[0][i] != conf.category[0])
 		    			groups.push(conf.data[0][i]);
 		    	};
+		    	baseConfiguration.area = {
+				  zerobased: false
+				}	
 		    	baseConfiguration.data.groups = [groups];		
 		        break;
 		    case 'Scatter Plot': // scatter
 		    	baseConfiguration.axis = {
 		    		x: {
-		    			label: conf.data[0][1]
+		    			label: conf.data[0][1],
+		    			tick: {
+				        	fit: false,
+				        }
 		    		},
 		    		y: {
 		    			label: conf.data[0][2]
@@ -139,6 +150,11 @@ angular.module('visualisasi')
 		    	baseConfiguration.data.columns = data;
 		    	baseConfiguration.data.x = null;
 		    	baseConfiguration.data.xs = xs;
+		    	baseConfiguration.point = {
+		    		r:  function(d) {
+			       		return 5;
+			    	}
+			    }
 		        break;
 		    case 'Bubble Plot': // bubble
 		    	baseConfiguration.axis = {
@@ -184,6 +200,7 @@ angular.module('visualisasi')
 		}
 		console.log(JSON.stringify(baseConfiguration.data));
 		$scope.chart = c3.generate(baseConfiguration);
+		$scope.loading = false;
 	}
 
 	$http.get('/visualization/data')

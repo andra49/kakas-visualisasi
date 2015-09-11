@@ -6,7 +6,7 @@
         <div class="col-md-8 col-md-offset-2">
             <div class="panel panel-default">
                 <div class="panel-heading">Konfigurasi Visualisasi</div>
-                <div class="panel-body">
+                <div class="panel-body" ng-hide="loading">
                     <div class="row" >
                         <div class="col-md-6" >
                             <h4>Pilih atribut yang divisualisasikan</h4>
@@ -56,9 +56,16 @@
                             </div>
                         </div>
                         <div class="col-md-6" >
-                            <h4>Rekomendasi dari sistem</h4>
+                            <h4>Rekomendasi dari sistem 
+                                <select class="pull-right" ng-init="numRecommendation = 3" ng-model="numRecommendation">
+                                    <option value="1">1 Rekomendasi</option>
+                                    <option value="3">3 Rekomendasi</option>
+                                    <option value="5">5 Rekomendasi</option>
+                                    <option value="100">Semua</option>
+                                </select>
+                            </h4>
                             <h5 ng-hide="recommendations.length > 0">Silahkan masukkan atribut</h5>
-                            <div class="panel panel-default" ng-repeat="recommendation in recommendations | limitTo:3">
+                            <div class="panel panel-default" ng-repeat="recommendation in recommendations | limitTo:numRecommendation">
                               <div class="panel-heading"><strong><% recommendation.visualization %></strong></div>
                               <div class="panel-body">
                                 <div class="media">
@@ -77,6 +84,20 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="panel-body sk-fading-circle" ng-show="loading">
+                    <div class="sk-circle1 sk-circle"></div>
+                    <div class="sk-circle2 sk-circle"></div>
+                    <div class="sk-circle3 sk-circle"></div>
+                    <div class="sk-circle4 sk-circle"></div>
+                    <div class="sk-circle5 sk-circle"></div>
+                    <div class="sk-circle6 sk-circle"></div>
+                    <div class="sk-circle7 sk-circle"></div>
+                    <div class="sk-circle8 sk-circle"></div>
+                    <div class="sk-circle9 sk-circle"></div>
+                    <div class="sk-circle10 sk-circle"></div>
+                    <div class="sk-circle11 sk-circle"></div>
+                    <div class="sk-circle12 sk-circle"></div>
                 </div>
             </div>
         </div>
